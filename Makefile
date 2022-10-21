@@ -25,6 +25,13 @@ pixelreactor: pixelreactor.o
 	cd clarity; make realclean; make ClarityNode.o
 	$(ENV) $(CC) -lembind pixelreactor.o clarity/ClarityNode.o $(CFLAGS) -o $(JSOUT)
 
+CLDemo.o: CLDemo.hpp
+	$(ENV) $(CC) CLDemo.hpp -c $(CFLAGS)
+	
+cldemo: cldemo.o
+	cd clarity; make realclean; make ClarityNode.o
+	$(ENV) $(CC) -lembind cldemo.o clarity/ClarityNode.o $(CFLAGS) -o $(JSOUT)
+
 # foo: pixelreactor.o
 #  	#
 	
