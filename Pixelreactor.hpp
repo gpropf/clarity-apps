@@ -17,7 +17,7 @@ struct PixelReactor : public PageContent {
         val CLElement = val::global("CLElement");
         val blackbody_st = CLElement["blackbody_st"];
         CLNodeFactory<HybridNode, double, double> builder("div", "maindiv");
-        HybridNode<double> *maindiv = builder.build();
+        auto *maindiv = builder.build();
 
         printf("Setup complete!\n");
         return maindiv;
