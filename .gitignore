@@ -6,7 +6,6 @@
 *.lo
 *.o
 *.obj
-*.wasm
 
 # Precompiled Headers
 *.gch
@@ -31,3 +30,10 @@
 *.exe
 *.out
 *.app
+
+# Emscripten and doxygen stuff
+*.wasm
+clarity_embind.js
+html/
+junk/
+latex/
