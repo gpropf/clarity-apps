@@ -1,5 +1,5 @@
-#ifndef Pixelreactor_hpp
-#define Pixelreactor_hpp
+#ifndef CLDemo_hpp
+#define CLDemo_hpp
 
 #include "CLNodeFactory.hpp"
 #include "CanvasElement.hpp"
@@ -120,7 +120,15 @@ struct CLDemo : public PageContent {
         maindiv->appendChild(canvas1CurrentCellColor_tinp);
         childOfMaindivBuilder.br();
 
-        
+        CLNodeFactory<Select, vector<string>, int> selectBuilder(childOfMaindivBuilder);
+        vector<string> * carOptions = new vector<string>;
+        carOptions->push_back("Chevy");
+        carOptions->push_back("Ford");
+
+        Select<vector<string>> * carSelect = selectBuilder.withName("cars").withCppVal(carOptions).select();
+        //carSelect->getCLE().template call<void>("addOptionElementFromString");
+        carSelect->getCLE().template call<void>("addOptionElementFromString", val((*carSelect->getCppVal())[0])); 
+        carSelect->getCLE().template call<void>("addOptionElementFromString", val((*carSelect->getCppVal())[1])); 
 
         printf("Setup complete!\n");
         return maindiv;
