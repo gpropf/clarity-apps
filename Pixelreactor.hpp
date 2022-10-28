@@ -19,6 +19,31 @@ struct PixelReactor : public PageContent {
         CLNodeFactory<HybridNode, double, double> builder("div", "maindiv");
         auto *maindiv = builder.build();
 
+
+    CLNodeFactory<HybridNode, unsigned char, double> canvasBuilder(builder);
+
+        CanvasGrid<unsigned char> *canvas1 =
+            canvasBuilder.withName("canvas1")
+                .withTag("canvas")
+                .withAttributes({{"style", val("border: 1px solid green")},
+                                 {"width", val(400)},
+                                 {"height", val(300)}})
+                .canvasGrid(60, 40, 600, 400);
+
+        canvas1->setCurrentCellVal(4);
+
+        auto *canvas1CurrentCellColor_tinp =
+            canvasBuilder.withName("currentCellColor_tinp")
+                .withCppVal(canvas1->getPtr2CurrentCellVal())
+                .withAttributes({{"style", val("border: 3px dashed purple")}, {"size", val(2)}})
+                .textInput();
+
+        maindiv->appendChild(canvas1);
+        maindiv->appendChild(canvas1CurrentCellColor_tinp);
+        builder.br();
+
+
+
         printf("Setup complete!\n");
         return maindiv;
     }
