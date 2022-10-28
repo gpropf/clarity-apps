@@ -18,12 +18,12 @@ FRAMEWORK_DEPS = Clarity.js Util.js pixelreactor.html Makefile
 %.o : %.cpp
 	$(ENV) $(CC) $< -o $@ -c $(CFLAGS)
 
-Pixelreactor.o: Pixelreactor.hpp
-	$(ENV) $(CC) pixelreactor.hpp -c $(CFLAGS)
+# Pixelreactor.o: Pixelreactor.hpp
+# 	$(ENV) $(CC) pixelreactor.hpp -c $(CFLAGS)
 	
-pixelreactor: pixelreactor.o
-	cd clarity; make realclean; make ClarityNode.o
-	$(ENV) $(CC) -lembind pixelreactor.o clarity/ClarityNode.o $(CFLAGS) -o $(JSOUT)
+pixelreactor: pixelreactor.o clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectables.o
+	cd clarity; make ClarityNode.o CanvasElement.o Selectables.o 
+	$(ENV) $(CC) -lembind pixelreactor.o clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectables.o $(CFLAGS) -o $(JSOUT)
 
 CLDemo.o: CLDemo.hpp
 	$(ENV) $(CC) CLDemo.hpp -c $(CFLAGS)
@@ -46,6 +46,7 @@ clean:
 	rm -f *.o 
 
 realclean: clean
+	cd clarity; make realclean
 	rm -f *.wasm *.wasm.map *.a $(JSOUT)
 
 #all: testbed speedtest docs
