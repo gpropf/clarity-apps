@@ -28,9 +28,9 @@ pixelreactor: pixelreactor.o clarity/ClarityNode.o clarity/CanvasElement.o clari
 CLDemo.o: CLDemo.hpp
 	$(ENV) $(CC) CLDemo.hpp -c $(CFLAGS)
 	
-cldemo: cldemo.o
-	cd clarity; make realclean; make ClarityNode.o
-	$(ENV) $(CC) -lembind cldemo.o clarity/ClarityNode.o $(CFLAGS) -o $(JSOUT)
+cldemo: cldemo.o clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectables.o
+	cd clarity; make ClarityNode.o CanvasElement.o Selectables.o
+	$(ENV) $(CC) -lembind cldemo.o clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectables.o $(CFLAGS) -o $(JSOUT)
 
 # foo: pixelreactor.o
 #  	#
