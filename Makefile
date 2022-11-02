@@ -21,16 +21,16 @@ FRAMEWORK_DEPS = Clarity.js Util.js pixelreactor.html Makefile
 # Pixelreactor.o: Pixelreactor.hpp
 # 	$(ENV) $(CC) pixelreactor.hpp -c $(CFLAGS)
 	
-pixelreactor: pixelreactor.o clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectables.o
-	cd clarity; make ClarityNode.o CanvasElement.o Selectables.o 
-	$(ENV) $(CC) -lembind pixelreactor.o clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectables.o $(CFLAGS) -o $(JSOUT)
+pixelreactor: pixelreactor.o clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectables.o clarity/clarity.o
+	cd clarity; make ClarityNode.o CanvasElement.o Selectables.o clarity.o
+	$(ENV) $(CC) -lembind pixelreactor.o clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectables.o clarity/clarity.o $(CFLAGS) -o $(JSOUT)
 
 CLDemo.o: CLDemo.hpp
 	$(ENV) $(CC) CLDemo.hpp -c $(CFLAGS)
 	
-cldemo: cldemo.o clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectables.o
-	cd clarity; make ClarityNode.o CanvasElement.o Selectables.o
-	$(ENV) $(CC) -lembind cldemo.o clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectables.o $(CFLAGS) -o $(JSOUT)
+cldemo: cldemo.o clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectables.o clarity/clarity.o
+	cd clarity; make ClarityNode.o CanvasElement.o Selectables.o clarity.o
+	$(ENV) $(CC) -lembind cldemo.o clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectables.o clarity/clarity.o $(CFLAGS) -o $(JSOUT)
 
 # foo: pixelreactor.o
 #  	#
