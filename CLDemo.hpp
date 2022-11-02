@@ -27,12 +27,13 @@ struct CLDemo : public PageContent {
             builder.createChildrenOf(maindiv);
 
         auto *cir1Radius_tinp = childOfMaindivBuilder.withLinkMultiplierConstant(1)
-                                                  .withName("cir1Radius_tinp")
-                                                  .withCppVal(cir1Radius_value)
-                                                  .textInput();
+                                    .withName("cir1Radius_tinp")
+                                    .withCppVal(cir1Radius_value)
+                                    .textInput();
 
-        auto *cir1Radius_rinp =
-            childOfMaindivBuilder.withLinkMultiplierConstant(1).withName("cir1Radius_rinp").rangeInput();
+        auto *cir1Radius_rinp = childOfMaindivBuilder.withLinkMultiplierConstant(1)
+                                    .withName("cir1Radius_rinp")
+                                    .rangeInput();
 
         cir1Radius_rinp->addPeer(cir1Radius_tinp, 0.5);
 
@@ -46,52 +47,50 @@ struct CLDemo : public PageContent {
 
         childOfMaindivBuilder.br();
 
-        auto *svgarea =
-            childOfMaindivBuilder.withName("svgarea")
-                .withTag("svg")
-                .withAttributes({{"width", val("300")},
-                                 {"height", val("200")},
-                                 {"viewBox", val("0 0 200 200")},
-                                 {"style", val("border: 1px solid black")}})
-                .build();
+        auto *svgarea = childOfMaindivBuilder.withName("svgarea")
+                            .withTag("svg")
+                            .withAttributes({{"width", val("300")},
+                                             {"height", val("200")},
+                                             {"viewBox", val("0 0 200 200")},
+                                             {"style", val("border: 1px solid black")}})
+                            .build();
 
         auto *cir1 = childOfMaindivBuilder.withName("cir1")
-                                       .withParent(svgarea)
-                                       .withTag("circle")
-                                       .withAttributes({{"r", val("30")},
-                                                        {"cx", val(100)},
-                                                        {"cy", val(100)},
-                                                        {"stroke", val("green")},
-                                                        {"fill", val("rgb(50,199,77)")},
-                                                        {"stroke-width", val(4)}})
-                                       .build();
+                         .withParent(svgarea)
+                         .withTag("circle")
+                         .withAttributes({{"r", val("30")},
+                                          {"cx", val(100)},
+                                          {"cy", val(100)},
+                                          {"stroke", val("green")},
+                                          {"fill", val("rgb(50,199,77)")},
+                                          {"stroke-width", val(4)}})
+                         .build();
 
         auto *cir1Radius = childOfMaindivBuilder.withModelNode(cir1Radius_tinp)
-                                             .withName("cir1Radius")
-                                             .withLinkMultiplierConstant(1)
-                                             .withAttributes({})
-                                             .attributeNode("r", cir1);
+                               .withName("cir1Radius")
+                               .withLinkMultiplierConstant(1)
+                               .withAttributes({})
+                               .attributeNode("r", cir1);
 
         auto *temp_rinp = childOfMaindivBuilder.withLinkMultiplierConstant(1)
-                                            .withName("temp_rinp")
-                                            .withCppVal(temp)
-                                            .rangeInput(0, 2000);
+                              .withName("temp_rinp")
+                              .withCppVal(temp)
+                              .rangeInput(0, 2000);
 
         auto *circleFill = childOfMaindivBuilder.withModelNode(temp_rinp)
-                                             .withName("circleFill")
-                                             .withTransformFns(blackbody_st, blackbody_st)
-                                             .attributeNode("fill", cir1);
+                               .withName("circleFill")
+                               .withTransformFns(blackbody_st, blackbody_st)
+                               .attributeNode("fill", cir1);
         childOfMaindivBuilder.br();
         string *flexLabelText =
             new string("This is the label for 'svgarea'. You can edit the text below.");
         auto *flexLabel = childOfMaindivBuilder_str.withCppVal(flexLabelText)
-                                            .withName("flexLabel")
-                                            .label(svgarea, *flexLabelText);
+                              .withName("flexLabel")
+                              .label(svgarea, *flexLabelText);
         childOfMaindivBuilder.hr();
-        auto *inputFlexTextLabel =
-            childOfMaindivBuilder_str.withName("inputFlexTextLabel")
-                .withModelNode(flexLabel)
-                .textInput();
+        auto *inputFlexTextLabel = childOfMaindivBuilder_str.withName("inputFlexTextLabel")
+                                       .withModelNode(flexLabel)
+                                       .textInput();
         childOfMaindivBuilder.br();
 
         string *textarea_val = new string("This is a textarea.");
@@ -120,7 +119,7 @@ struct CLDemo : public PageContent {
         maindiv->appendChild(canvas1CurrentCellColor_tinp);
         childOfMaindivBuilder.br();
 
-         CLNodeFactory<Select, vector<pair<int, string>>, int> selectBuilder(childOfMaindivBuilder);
+        CLNodeFactory<Select, vector<pair<int, string>>, int> selectBuilder(childOfMaindivBuilder);
         vector<pair<int, string>> *carOptions = new vector<pair<int, string>>;
         carOptions->push_back({1, "Chevy"});
         carOptions->push_back({2, "Ford"});
@@ -130,11 +129,14 @@ struct CLDemo : public PageContent {
         Select<vector<pair<int, string>>> *carSelect =
             selectBuilder.withName("cars").withCppVal(carOptions).select();
 
+        CLNodeFactory<HybridNode, bool, int> checkboxBuilder(childOfMaindivBuilder);
+        // string * checkme = new string("checked");
+        bool *checkme = new bool(true);
+        checkboxBuilder.withCppVal(checkme).withName("checkme").checkbox();
 
         printf("Setup complete!\n");
         return maindiv;
     }
-    
 };
 
 #endif
