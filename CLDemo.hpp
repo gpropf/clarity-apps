@@ -94,7 +94,7 @@ struct CLDemo : public PageContent {
         childOfMaindivBuilder.br();
 
         string *textarea_val = new string("This is a textarea.");
-        auto *textarea1 = childOfMaindivBuilder_str.textarea(textarea_val, 3, 40);
+        auto *textarea1 = childOfMaindivBuilder_str.withName("clappsTextarea").textarea(textarea_val, 3, 40);
         childOfMaindivBuilder.br();
 
         CLNodeFactory<HybridNode, unsigned char, double> canvasBuilder("div", "canvasDiv");
