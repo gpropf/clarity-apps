@@ -24,7 +24,7 @@ struct CLDemo : public PageContent {
         auto *maindiv = builder.build();
 
         CLNodeFactory<HybridNode, double, double> childOfMaindivBuilder =
-            builder.createChildrenOf(maindiv);
+            builder.withChildrenOf(maindiv);
 
         auto *cir1Radius_tinp = childOfMaindivBuilder.withLinkMultiplierConstant(1)
                                     .withName("cir1Radius_tinp")
@@ -66,7 +66,7 @@ struct CLDemo : public PageContent {
                                           {"stroke-width", val(4)}})
                          .build();
 
-        auto *cir1Radius = childOfMaindivBuilder.withModelNode(cir1Radius_tinp)
+        auto *cir1Radius = childOfMaindivBuilder.withPeer(cir1Radius_tinp)
                                .withName("cir1Radius")
                                .withLinkMultiplierConstant(1)
                                .withAttributes({})
@@ -77,7 +77,7 @@ struct CLDemo : public PageContent {
                               .withCppVal(temp)
                               .rangeInput(0, 2000);
 
-        auto *circleFill = childOfMaindivBuilder.withModelNode(temp_rinp)
+        auto *circleFill = childOfMaindivBuilder.withPeer(temp_rinp)
                                .withName("circleFill")
                                .withTransformFns(blackbody_st, blackbody_st)
                                .attributeNode("fill", cir1);
@@ -89,7 +89,7 @@ struct CLDemo : public PageContent {
                               .label(svgarea, *flexLabelText);
         childOfMaindivBuilder.hr();
         auto *inputFlexTextLabel = childOfMaindivBuilder_str.withName("inputFlexTextLabel")
-                                       .withModelNode(flexLabel)
+                                       .withPeer(flexLabel)
                                        .textInput();
         childOfMaindivBuilder.br();
 
