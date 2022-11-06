@@ -134,6 +134,21 @@ struct CLDemo : public PageContent {
         bool *checkme = new bool(true);
         checkboxBuilder.withCppVal(checkme).withName("checkme").checkbox();
 
+
+        CLNodeFactory<SimpleSelect, int, int> simpleSelectBuilder(childOfMaindivBuilder);
+        vector<pair<int, string>> *carOptions2 = new vector<pair<int, string>>;
+        carOptions2->push_back({1, "BMW"});
+        carOptions2->push_back({2, "Lambo"});
+        carOptions2->push_back({3, "Lada"});
+        carOptions2->push_back({4, "Ferrari"});
+
+        int * carSelection = new int(3);
+
+        SimpleSelect<int> *carSelect_ss =
+            simpleSelectBuilder.withName("carSelect_ss").withCppVal(carSelection).simpleSelect<string>(*carOptions2);
+
+        
+
         printf("Setup complete!\n");
         return maindiv;
     }
