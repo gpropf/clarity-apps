@@ -14,8 +14,8 @@ using namespace clarity;
  */
 struct CLDemo : public PageContent {
     ClarityNode *content(ClarityNode *innerContent = nullptr) {
-        val CLElement = val::global("CLElement");
-        val blackbody_st = CLElement["blackbody_st"];
+        val JSProxyNode = val::global("JSProxyNode");
+        val blackbody_st = JSProxyNode["blackbody_st"];
 
         double *temp = new double(330);
         double *cir1Radius_value = new double(88.4);
