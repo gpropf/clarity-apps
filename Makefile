@@ -10,7 +10,7 @@ CFLAGS	=  -O0 -g -std=c++17 -I./clarity
 
 JSOUT	= clarity_embind.js
 
-FRAMEWORK_DEPS = Clarity.js Util.js pixelreactor.html Makefile
+FRAMEWORK_DEPS = JSProxyNode.js Util.js pixelreactor.html Makefile
 
 # %.o : %.cpp $(FRAMEWORK_DEPS)
 # 	$(ENV) $(CC) $< -o $@ -c $(CFLAGS)
