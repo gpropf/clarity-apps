@@ -14,11 +14,23 @@ using namespace clarity;
  *
  */
 struct PixelReactor : public PageContent {
+
+    
+    
+    
+    
+    int *ruleFrameWidth = new int(5);
+    int *ruleFrameHeight = new int(3);
+
+
     ClarityNode *content(ClarityNode *innerContent = nullptr) {
         val CLElement = val::global("CLElement");
         val blackbody_st = ClarityNode::JSProxyNode_["blackbody_st"];
         CLNodeFactory<HybridNode, double, double> builder("div", "maindiv");
         auto *maindiv = builder.build();
+
+        CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(maindiv));
+        CLNodeFactory<HybridNode, int, int> intBuilder(builder.withChildrenOf(maindiv));
         //builder = builder->
 
         CLNodeFactory<HybridNode, unsigned char, double> canvasBuilder(builder);
@@ -43,9 +55,20 @@ struct PixelReactor : public PageContent {
         maindiv->appendChild(canvas1CurrentCellColor_tinp);
         builder.br();
 
-        CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(maindiv));
+        //CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(maindiv));
         string *cmdarea_text = new string("This is a textarea.");
-        auto *cmdarea = textBuilder.withName("cmdarea").textarea(cmdarea_text, 3, 40);
+        auto *cmdarea = textBuilder.withName("cmdarea").textarea(cmdarea_text, 6, 80);
+        textBuilder.br();
+        auto *cmdarea_lbl = textBuilder.label(cmdarea, "CMD:", true);
+        textBuilder.br();
+
+        auto * ruleFrameWidth_tinp = intBuilder.withName("ruleFrameWidth_tinp").withCppVal(ruleFrameWidth).textInput();
+        auto * ruleFrameWidth_tinp_lbl = intBuilder.label(ruleFrameWidth_tinp, "Width of new rule frames.", true);
+        auto * ruleFrameHeight_tinp = intBuilder.withName("ruleFrameHeight_tinp").withCppVal(ruleFrameHeight).textInput();
+        auto * ruleFrameHeight_tinp_lbl = intBuilder.label(ruleFrameHeight_tinp, "Height of new rule frames.", true);
+
+
+
         textBuilder.br();
 
         printf("Setup complete!\n");
