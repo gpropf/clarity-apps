@@ -5,6 +5,7 @@
 #include "CanvasElement.hpp"
 #include "ClarityNode.hpp"
 #include "clarity.hpp"
+#include "globals.hpp"
 
 using namespace clarity;
 
@@ -15,12 +16,12 @@ using namespace clarity;
 struct PixelReactor : public PageContent {
     ClarityNode *content(ClarityNode *innerContent = nullptr) {
         val CLElement = val::global("CLElement");
-        val blackbody_st = CLElement["blackbody_st"];
+        val blackbody_st = ClarityNode::JSProxyNode_["blackbody_st"];
         CLNodeFactory<HybridNode, double, double> builder("div", "maindiv");
         auto *maindiv = builder.build();
+        //builder = builder->
 
-
-    CLNodeFactory<HybridNode, unsigned char, double> canvasBuilder(builder);
+        CLNodeFactory<HybridNode, unsigned char, double> canvasBuilder(builder);
 
         CanvasGrid<unsigned char> *canvas1 =
             canvasBuilder.withName("canvas1")
@@ -42,7 +43,10 @@ struct PixelReactor : public PageContent {
         maindiv->appendChild(canvas1CurrentCellColor_tinp);
         builder.br();
 
-
+        CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(maindiv));
+        string *cmdarea_text = new string("This is a textarea.");
+        auto *cmdarea = textBuilder.withName("cmdarea").textarea(cmdarea_text, 3, 40);
+        textBuilder.br();
 
         printf("Setup complete!\n");
         return maindiv;
