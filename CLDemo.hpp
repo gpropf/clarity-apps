@@ -17,6 +17,11 @@ struct CLDemo : public PageContent {
         val JSProxyNode = val::global("JSProxyNode");
         val blackbody_st = JSProxyNode["blackbody_st"];
 
+        val elgInputAlltypesMouseover = ClarityNode::JSProxyNode_["elgInputAlltypesMouseover"];
+
+        ClarityNode::installListenerGenerators(
+            "JSProxyNode", "HybridNode", elgInputAlltypesMouseover, "input", "range", "mouseover");
+
         double *temp = new double(330);
         double *cir1Radius_value = new double(88.4);
 
@@ -94,7 +99,8 @@ struct CLDemo : public PageContent {
         childOfMaindivBuilder.br();
 
         string *textarea_val = new string("This is a textarea.");
-        auto *textarea1 = childOfMaindivBuilder_str.withName("clappsTextarea").textarea(textarea_val, 3, 40);
+        auto *textarea1 =
+            childOfMaindivBuilder_str.withName("clappsTextarea").textarea(textarea_val, 3, 40);
         childOfMaindivBuilder.br();
 
         CLNodeFactory<HybridNode, unsigned char, double> canvasBuilder("div", "canvasDiv");
@@ -134,7 +140,6 @@ struct CLDemo : public PageContent {
         bool *checkme = new bool(true);
         checkboxBuilder.withCppVal(checkme).withName("checkme").checkbox();
 
-
         CLNodeFactory<SimpleSelect, int, int> simpleSelectBuilder(childOfMaindivBuilder);
         vector<pair<int, string>> *carOptions2 = new vector<pair<int, string>>;
         carOptions2->push_back({0, "BMW"});
@@ -142,12 +147,11 @@ struct CLDemo : public PageContent {
         carOptions2->push_back({2, "Lada"});
         carOptions2->push_back({3, "Ferrari"});
 
-        int * carSelection = new int(3);
+        int *carSelection = new int(3);
 
-        SimpleSelect<int> *carSelect_ss =
-            simpleSelectBuilder.withName("carSelect_ss").withCppVal(carSelection).simpleSelect<string>(*carOptions2);
-
-        
+        SimpleSelect<int> *carSelect_ss = simpleSelectBuilder.withName("carSelect_ss")
+                                              .withCppVal(carSelection)
+                                              .simpleSelect<string>(*carOptions2);
 
         printf("Setup complete!\n");
         return maindiv;
