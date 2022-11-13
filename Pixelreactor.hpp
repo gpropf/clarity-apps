@@ -24,6 +24,9 @@ struct PixelReactor : public PageContent {
 
 
     ClarityNode *content(ClarityNode *innerContent = nullptr) {
+        ClarityNode::addJSAuxScript("clapps-aux.js");
+        ClarityNode::runJSAuxScripts();
+        
         val CLElement = val::global("CLElement");
         val blackbody_st = ClarityNode::JSProxyNode_["blackbody_st"];
         CLNodeFactory<HybridNode, double, double> builder("div", "maindiv");

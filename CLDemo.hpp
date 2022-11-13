@@ -14,6 +14,9 @@ using namespace clarity;
  */
 struct CLDemo : public PageContent {
     ClarityNode *content(ClarityNode *innerContent = nullptr) {
+        ClarityNode::addJSAuxScript("clapps-aux.js");
+        ClarityNode::runJSAuxScripts();
+
         val JSProxyNode = val::global("JSProxyNode");
         val blackbody_st = JSProxyNode["blackbody_st"];
 
