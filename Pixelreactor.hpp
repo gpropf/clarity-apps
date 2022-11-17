@@ -9,11 +9,17 @@
 
 using namespace clarity;
 
+template <typename U>
+class BeakerNode;
+
 template <typename V>
 class Beaker {
    protected:
     int gridWidth, gridHeight;
     V *gridArray;
+
+    template <typename U>
+    friend class BeakerNode;
 };
 
 template <typename V>
@@ -22,7 +28,66 @@ class BeakerNode : public HybridNode<V> {
     BeakerNode(const string &name, const string &tag, bool useExistingDOMElement,
                ClarityNode::AttachmentMode attachmentMode = ClarityNode::AttachmentMode::NEW,
                const string &attachmentId = "")
-        : HybridNode<V>(name, tag, useExistingDOMElement, attachmentMode, attachmentId) {}
+        : HybridNode<V>(name, tag, useExistingDOMElement, attachmentMode, attachmentId) {
+        // using beaker = this->cppVal_;
+        
+     
+    }
+
+    virtual void finalize() {
+          // CLNodeFactory<BeakerNode, Beaker<unsigned char>, int> builder("div", "testBeaker");
+        // auto *this = builder.build();
+
+        // CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(this));
+        // CLNodeFactory<HybridNode, int, int> intBuilder(builder.withChildrenOf(this));
+
+        // builder = builder->
+
+        //CLNodeFactory<HybridNode, unsigned char, double> canvasBuilder(builder);
+
+        // CanvasGrid<unsigned char> *beakerCnv =
+        //     canvasBuilder.withName("canvas1")
+        //         .withTag("canvas")
+        //         .withAttributes({{"style", val("border: 1px solid green")},
+        //                          {"width", val(600)},
+        //                          {"height", val(400)}})
+        //         .canvasGrid(60, 40, 600, 400);
+
+        // beakerCnv->setCurrentCellVal(4);
+
+        // auto *canvas1CurrentCellColor_tinp =
+        //     canvasBuilder.withName("currentCellColor_tinp")
+        //         .withCppVal(beakerCnv->getPtr2CurrentCellVal())
+        //         .withAttributes({{"style", val("border: 3px dashed purple")}, {"size", val(2)}})
+        //         .textInput();
+
+        //this->appendChild(beakerCnv);
+       // this->appendChild(canvas1CurrentCellColor_tinp);
+      
+      //  builder.br();
+
+        // CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(maindiv));
+        // string *cmdarea_text = new string("This is a textarea.");
+        // auto *cmdarea = textBuilder.withName("cmdarea").textarea(cmdarea_text, 6, 80);
+        // textBuilder.br();
+        // auto *cmdarea_lbl = textBuilder.label(cmdarea, "CMD:", true);
+        // textBuilder.br();
+
+        // auto *ruleFrameWidth_tinp = intBuilder.withName("ruleFrameWidth_tinp")
+        //                                 .withCppVal(&this->cppVal_->gridWidth)
+        //                                 .textInput();
+        // auto *ruleFrameWidth_tinp_lbl =
+        //     intBuilder.label(ruleFrameWidth_tinp, "Width of new rule frames.", true);
+        // auto *ruleFrameHeight_tinp = intBuilder.withName("ruleFrameHeight_tinp")
+        //                                  .withCppVal(&this->cppVal_->gridHeight)
+        //                                  .textInput();
+        // auto *ruleFrameHeight_tinp_lbl =
+        //     intBuilder.label(ruleFrameHeight_tinp, "Height of new rule frames.", true);
+
+        //textBuilder.br();
+    }
+
+
 
     inline virtual void doNothing() {
         cout << "This method exists so that Embind will create a type when this method in bound."
