@@ -14,8 +14,13 @@ class BeakerNode;
 
 template <typename V>
 class Beaker {
+   public:
+    void makeNewReactionRule() { cout << "makeNewReactionRule()" << endl; }
+
+    static void makeNewReactionRule_st(Beaker *b) { b->makeNewReactionRule(); }
+
    protected:
-    int gridWidth, gridHeight;
+    int gridWidth = 5, gridHeight = 3;
     V *gridArray;
 
     template <typename U>
@@ -31,6 +36,20 @@ class BeakerNode : public HybridNode<V> {
         : HybridNode<V>(name, tag, useExistingDOMElement, attachmentMode, attachmentId) {}
 
     virtual void finalize() {
+        val JSProxyNode = val::global("JSProxyNode");
+        val doNothing = JSProxyNode["doNothing"];
+        val Module = val::global("Module");
+        val Beaker = Module["Beaker"];
+        val makeNewReactionRule_el = Beaker["makeNewReactionRule_st"];
+
+        val makeEl = Module["makeEl"];
+        // val makeNewReactionRule_el = makeEl(*(this->cppVal_), makeNewReactionRule);
+
+        //val makeNewReactionRule_el = val([this](val ev) { (this->cppVal_)->makeNewReactionRule(); });
+        //val makeNewReactionRule_el = val([this](val ev) { Beaker<unsigned char>::makeNewReactionRule_st(this->cppVal_); });
+
+        //val makeNewReactionRule_st = Beaker["makeNewReactionRule_st"];
+
         CLNodeFactory<HybridNode, string, int> builder("div", "testBeaker");
         // auto *this = builder.build();
 
@@ -82,6 +101,11 @@ class BeakerNode : public HybridNode<V> {
             intBuilder.label(ruleFrameHeight_tinp, "Height of new rule frames.", true);
 
         textBuilder.br();
+
+        auto *newReactionRule_btn =
+            intBuilder.button("newReactionRule_btn", "Make reaction rule", makeNewReactionRule_el);
+
+        textBuilder.br();
     }
 
     inline virtual void doNothing() {
@@ -93,6 +117,12 @@ class BeakerNode : public HybridNode<V> {
 EMSCRIPTEN_BINDINGS(PixelReactor) {
     class_<HybridNode<Beaker<unsigned char>>>("BeakerNode_h")
         .function("doNothing", &HybridNode<Beaker<unsigned char>>::doNothing, allow_raw_pointers());
+
+    class_<Beaker<unsigned char>>("Beaker")
+        .function("makeNewReactionRule", &Beaker<unsigned char>::makeNewReactionRule,
+                  allow_raw_pointers())
+        .class_function("makeNewReactionRule_st", &Beaker<unsigned char>::makeNewReactionRule_st,
+                        allow_raw_pointers());
 }
 
 /**
@@ -115,47 +145,7 @@ struct PixelReactor : public PageContent {
         CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(maindiv));
         CLNodeFactory<HybridNode, int, int> intBuilder(builder.withChildrenOf(maindiv));
 
-        // builder = builder->
-
         CLNodeFactory<HybridNode, unsigned char, double> canvasBuilder(builder);
-
-        // CanvasGrid<unsigned char> *canvas1 =
-        //     canvasBuilder.withName("canvas1")
-        //         .withTag("canvas")
-        //         .withAttributes({{"style", val("border: 1px solid green")},
-        //                          {"width", val(600)},
-        //                          {"height", val(400)}})
-        //         .canvasGrid(60, 40, 600, 400);
-
-        // canvas1->setCurrentCellVal(4);
-
-        // auto *canvas1CurrentCellColor_tinp =
-        //     canvasBuilder.withName("currentCellColor_tinp")
-        //         .withCppVal(canvas1->getPtr2CurrentCellVal())
-        //         .withAttributes({{"style", val("border: 3px dashed purple")}, {"size", val(2)}})
-        //         .textInput();
-
-        // maindiv->appendChild(canvas1);
-        // maindiv->appendChild(canvas1CurrentCellColor_tinp);
-        // builder.br();
-
-        // // CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(maindiv));
-        // string *cmdarea_text = new string("This is a textarea.");
-        // auto *cmdarea = textBuilder.withName("cmdarea").textarea(cmdarea_text, 6, 80);
-        // textBuilder.br();
-        // auto *cmdarea_lbl = textBuilder.label(cmdarea, "CMD:", true);
-        // textBuilder.br();
-
-        // auto *ruleFrameWidth_tinp =
-        //     intBuilder.withName("ruleFrameWidth_tinp").withCppVal(ruleFrameWidth).textInput();
-        // auto *ruleFrameWidth_tinp_lbl =
-        //     intBuilder.label(ruleFrameWidth_tinp, "Width of new rule frames.", true);
-        // auto *ruleFrameHeight_tinp =
-        //     intBuilder.withName("ruleFrameHeight_tinp").withCppVal(ruleFrameHeight).textInput();
-        // auto *ruleFrameHeight_tinp_lbl =
-        //     intBuilder.label(ruleFrameHeight_tinp, "Height of new rule frames.", true);
-
-        // textBuilder.br();
 
         CLNodeFactory<BeakerNode, Beaker<unsigned char>, int> beakerBuilder(
             builder.withChildrenOf(maindiv));

@@ -2,3 +2,13 @@
 // be initialized along with the rest of Clarity.
 
 console.log("Hello from Clarity Apps Demo.js!");
+
+function clappsfoo(x) {
+    console.log("FOO = " + x);
+}
+
+function makeEl(obj, method) {
+    return function(ev) {
+        obj.method();
+    }
+}
