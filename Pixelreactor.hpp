@@ -52,6 +52,7 @@ class BeakerNode : public HybridNode<V> {
         clappsfoo(13);
 
         val makeNewReactionRule_el = makeEl(*(this->cppVal_), makeNewReactionRule_st);
+        //val makeNewReactionRule_el = val::null();
 
         // val makeNewReactionRule_el = val([this](val ev) { (this->cppVal_)->makeNewReactionRule();
         // }); val makeNewReactionRule_el = val([this](val ev) { Beaker<unsigned

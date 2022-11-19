@@ -23,7 +23,7 @@ FRAMEWORK_DEPS = JSProxyNode.js Util.js pixelreactor.html Makefile
 	
 pixelreactor: pixelreactor.o clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectables.o clarity/clarity.o
 	cd clarity; make ClarityNode.o CanvasElement.o Selectables.o clarity.o
-	$(ENV) $(CC) -lembind pixelreactor.o clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectables.o clarity/clarity.o $(CFLAGS) -o $(JSOUT)
+	$(ENV) $(CC) -lembind --pre-js jsaux/clapps-aux.js pixelreactor.o clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectables.o clarity/clarity.o $(CFLAGS) -o $(JSOUT)
 
 CLDemo.o: CLDemo.hpp
 	$(ENV) $(CC) CLDemo.hpp -c $(CFLAGS)

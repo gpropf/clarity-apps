@@ -9,14 +9,7 @@
 #include "embindings.hpp"
 #include "globals.hpp"
 
-
-
-
 int main() {
-
-    ClarityNode::addJSAuxScript("clapps-aux.js");
-    ClarityNode::runJSAuxScripts();
-
     PixelReactor pixelreactor;
     TestFramework testFramework;
     testFramework.content(pixelreactor.content());
