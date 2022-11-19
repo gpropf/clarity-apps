@@ -9,6 +9,6 @@ function clappsfoo(x) {
 
 function makeEl(obj, method) {
     return function(ev) {
-        obj.method();
+        method(obj);
     }
 }

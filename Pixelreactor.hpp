@@ -15,11 +15,14 @@ class BeakerNode;
 template <typename V>
 class Beaker {
    public:
-    void makeNewReactionRule() { cout << "makeNewReactionRule()" << endl; }
+    void makeNewReactionRule() {
+        cout << "makeNewReactionRule(), jiveCount = " << jiveCount++ << endl;
+    }
 
     static void makeNewReactionRule_st(Beaker *b) { b->makeNewReactionRule(); }
 
    protected:
+    int jiveCount = 0;
     int gridWidth = 5, gridHeight = 3;
     V *gridArray;
 
@@ -40,15 +43,21 @@ class BeakerNode : public HybridNode<V> {
         val doNothing = JSProxyNode["doNothing"];
         val Module = val::global("Module");
         val Beaker = Module["Beaker"];
-        val makeNewReactionRule_el = Beaker["makeNewReactionRule_st"];
+        // val makeNewReactionRule_el = Beaker["makeNewReactionRule_st"];
+        val makeNewReactionRule_st = Beaker["makeNewReactionRule_st"];
 
-        val makeEl = Module["makeEl"];
-        // val makeNewReactionRule_el = makeEl(*(this->cppVal_), makeNewReactionRule);
+        val makeEl = val::global("makeEl");
 
-        //val makeNewReactionRule_el = val([this](val ev) { (this->cppVal_)->makeNewReactionRule(); });
-        //val makeNewReactionRule_el = val([this](val ev) { Beaker<unsigned char>::makeNewReactionRule_st(this->cppVal_); });
+        val clappsfoo = val::global("clappsfoo");
+        clappsfoo(13);
 
-        //val makeNewReactionRule_st = Beaker["makeNewReactionRule_st"];
+        val makeNewReactionRule_el = makeEl(*(this->cppVal_), makeNewReactionRule_st);
+
+        // val makeNewReactionRule_el = val([this](val ev) { (this->cppVal_)->makeNewReactionRule();
+        // }); val makeNewReactionRule_el = val([this](val ev) { Beaker<unsigned
+        // char>::makeNewReactionRule_st(this->cppVal_); });
+
+        // val makeNewReactionRule_st = Beaker["makeNewReactionRule_st"];
 
         CLNodeFactory<HybridNode, string, int> builder("div", "testBeaker");
         // auto *this = builder.build();
@@ -134,9 +143,6 @@ struct PixelReactor : public PageContent {
     int *ruleFrameHeight = new int(3);
 
     ClarityNode *content(ClarityNode *innerContent = nullptr) {
-        ClarityNode::addJSAuxScript("clapps-aux.js");
-        ClarityNode::runJSAuxScripts();
-
         val CLElement = val::global("CLElement");
         // val blackbody_st = ClarityNode::JSProxyNode_["blackbody_st"];
         CLNodeFactory<HybridNode, double, double> builder("div", "maindiv");
