@@ -35,6 +35,9 @@ cldemo: cldemo.o clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectabl
 docs: clarity-apps.doxyconfig
 	doxygen clarity-apps.doxyconfig
 
+docsclean:
+	rm -rf html latex
+
 clean:
 	rm -f *.o 
 

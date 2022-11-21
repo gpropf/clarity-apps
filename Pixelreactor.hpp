@@ -31,7 +31,7 @@ class Beaker {
     static void makeNewReactionRule_st(Beaker *b) { b->makeNewReactionRule(); }
 
    protected:
-    int jiveCount = 0; //!< A phony counter just to prove we can maintain state as the app runs.
+    int jiveCount = 0; //!< A phony counter just to prove we can maintain state using the 'make rule' button as the app runs.
     int gridWidth = 60; //!< Width of beaker grid in cells.
     int gridHeight = 40; //!< Height of beaker grid in cells.
     V *gridArray; //!< The actual grid data to be used by the CanvasGrid in BeakerNode.
