@@ -118,11 +118,13 @@ class BeakerNode : public HybridNode<V> {
 
         auto *ruleFrameWidth_tinp = intBuilder.withName("ruleFrameWidth_tinp")
                                         .withCppVal(&this->cppVal_->gridWidth)
+                                        .withAttributes({{"class", val("small_width")}})
                                         .textInput();
         auto *ruleFrameWidth_tinp_lbl =
             intBuilder.label(ruleFrameWidth_tinp, "Width of new rule frames.", true);
         auto *ruleFrameHeight_tinp = intBuilder.withName("ruleFrameHeight_tinp")
                                          .withCppVal(&this->cppVal_->gridHeight)
+                                         .withAttributes({{"class", val("small_width")}})
                                          .textInput();
         auto *ruleFrameHeight_tinp_lbl =
             intBuilder.label(ruleFrameHeight_tinp, "Height of new rule frames.", true);
