@@ -12,6 +12,15 @@ using namespace clarity;
 template <typename U>
 class BeakerNode;
 
+/**
+ * @brief Represents a single "reaction vessel" in which our experiments can take place. The
+ * reaction rules that determine how patterns in the grid transform will use the same CanvasGrid
+ * control the beaker itself does.
+ *
+ * @tparam V This is the type we are using for the grid elements. The original app I wrote in
+ * ClojureScript used small positive integers for the colors so the expected type here is `unsigned
+ * char`. Theoretically, it's possible to use other types though.
+ */
 template <typename V>
 class Beaker {
    public:
@@ -22,14 +31,22 @@ class Beaker {
     static void makeNewReactionRule_st(Beaker *b) { b->makeNewReactionRule(); }
 
    protected:
-    int jiveCount = 0;
-    int gridWidth = 5, gridHeight = 3;
-    V *gridArray;
+    int jiveCount = 0; //!< A phony counter just to prove we can maintain state as the app runs.
+    int gridWidth = 60; //!< Width of beaker grid in cells.
+    int gridHeight = 40; //!< Height of beaker grid in cells.
+    V *gridArray; //!< The actual grid data to be used by the CanvasGrid in BeakerNode.
 
     template <typename U>
     friend class BeakerNode;
 };
 
+/**
+ * @brief This is the complex control that allows the user to edit and run the Beaker. Probably a
+ * good thing to copy if you're planning to make your own complex controls.
+ *
+ * @tparam V This 'V' is actually the Beaker objects themselves. So the `cppVal_` member of this
+ * kind of node points to a Beaker.
+ */
 template <typename V>
 class BeakerNode : public HybridNode<V> {
    public:
@@ -52,7 +69,7 @@ class BeakerNode : public HybridNode<V> {
         clappsfoo(13);
 
         val makeNewReactionRule_el = makeEl(*(this->cppVal_), makeNewReactionRule_st);
-        //val makeNewReactionRule_el = val::null();
+        // val makeNewReactionRule_el = val::null();
 
         // val makeNewReactionRule_el = val([this](val ev) { (this->cppVal_)->makeNewReactionRule();
         // }); val makeNewReactionRule_el = val([this](val ev) { Beaker<unsigned

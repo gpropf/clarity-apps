@@ -32,15 +32,8 @@ cldemo: cldemo.o clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectabl
 	cd clarity; make ClarityNode.o CanvasElement.o Selectables.o clarity.o
 	$(ENV) $(CC) -lembind cldemo.o clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectables.o clarity/clarity.o $(CFLAGS) -o $(JSOUT)
 
-# foo: pixelreactor.o
-#  	#
-	
-	
-# $(CC) -lembind pixelreactor.o ClarityNode.o CanvasElement.o $(CFLAGS) -o $(JSOUT)
-
-
-docs: clarity.doxyconfig
-	doxygen clarity.doxyconfig
+docs: clarity-apps.doxyconfig
+	doxygen clarity-apps.doxyconfig
 
 clean:
 	rm -f *.o 
@@ -49,4 +42,4 @@ realclean: clean
 	cd clarity; make realclean
 	rm -f *.wasm *.wasm.map *.a $(JSOUT)
 
-#all: testbed speedtest docs
+#all: pixelreactor cldemo docs
