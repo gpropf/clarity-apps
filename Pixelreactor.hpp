@@ -24,20 +24,33 @@ class BeakerNode;
 template <typename V>
 class Beaker {
    public:
+
+    BeakerNode<Beaker<V>> *beakerNode_;  //!< Pointer back to containing BN so that BN->refresh()
+                                         //!< can be called when this updates.
     void makeNewReactionRule() {
-        cout << "makeNewReactionRule(), jiveCount = " << jiveCount++ << endl;
+        this->iterationCount_++;
+        this->jiveCount++;
+        cout << "makeNewReactionRule(), jiveCount = " << jiveCount << endl;
+        cout << "makeNewReactionRule(), iterationCount_ = " << this->iterationCount_ << endl;
+        beakerNode_->refresh();
     }
 
+   // inline void setBeakerNode(BeakerNode<Beaker<V>> * beakerNode) { this->beakerNode_ = beakerNode;}
     static void makeNewReactionRule_st(Beaker *b) { b->makeNewReactionRule(); }
 
    protected:
-    int jiveCount = 0; //!< A phony counter just to prove we can maintain state using the 'make rule' button as the app runs.
-    int gridWidth = 60; //!< Width of beaker grid in cells.
-    int gridHeight = 40; //!< Height of beaker grid in cells.
-    V *gridArray; //!< The actual grid data to be used by the CanvasGrid in BeakerNode.
+    int iterationCount_ =
+        0;                //!< Counter that advances every time the rules are applied to the grid.
+    int jiveCount = 0;    //!< A phony counter just to prove we can maintain state using the 'make
+                          //!< rule' button as the app runs.
+    int gridWidth = 60;   //!< Width of beaker grid in cells.
+    int gridHeight = 40;  //!< Height of beaker grid in cells.
+    V *gridArray;         //!< The actual grid data to be used by the CanvasGrid in BeakerNode.
 
     template <typename U>
     friend class BeakerNode;
+
+   
 };
 
 /**
@@ -49,41 +62,41 @@ class Beaker {
  */
 template <typename V>
 class BeakerNode : public HybridNode<V> {
+   private:
+    // ClarityNode *iterationCounter_;
+
    public:
     BeakerNode(const string &name, const string &tag, bool useExistingDOMElement,
                ClarityNode::AttachmentMode attachmentMode = ClarityNode::AttachmentMode::NEW,
                const string &attachmentId = "")
         : HybridNode<V>(name, tag, useExistingDOMElement, attachmentMode, attachmentId) {}
 
+    virtual void refresh() {
+        // this->cppVal_->iterationCount_++;
+        //
+        HybridNode<V>::refresh();
+
+        // for (auto child : this->children_) {
+        //     child->refresh();
+        // }
+        // this->iterationCounter_->refresh();
+    }
+
     virtual void finalize() {
+        //this->cppVal_->beakerNode_ = &*this;
+        //this->cppVal_->setBeakerNode(this);
+
         val JSProxyNode = val::global("JSProxyNode");
         val doNothing = JSProxyNode["doNothing"];
         val Module = val::global("Module");
         val Beaker = Module["Beaker"];
-        // val makeNewReactionRule_el = Beaker["makeNewReactionRule_st"];
+
         val makeNewReactionRule_st = Beaker["makeNewReactionRule_st"];
-
         val makeEl = val::global("makeEl");
-
-        val clappsfoo = val::global("clappsfoo");
-        clappsfoo(13);
-
         val makeNewReactionRule_el = makeEl(*(this->cppVal_), makeNewReactionRule_st);
-        // val makeNewReactionRule_el = val::null();
-
-        // val makeNewReactionRule_el = val([this](val ev) { (this->cppVal_)->makeNewReactionRule();
-        // }); val makeNewReactionRule_el = val([this](val ev) { Beaker<unsigned
-        // char>::makeNewReactionRule_st(this->cppVal_); });
-
-        // val makeNewReactionRule_st = Beaker["makeNewReactionRule_st"];
 
         CLNodeFactory<HybridNode, string, int> builder("div", "testBeaker");
-        // auto *this = builder.build();
-
-        // CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(this));
         CLNodeFactory<HybridNode, int, int> intBuilder(builder.withChildrenOf(this));
-
-        // builder = builder->
 
         CLNodeFactory<HybridNode, unsigned char, double> canvasBuilder(
             builder.withChildrenOf(this));
@@ -104,28 +117,29 @@ class BeakerNode : public HybridNode<V> {
                 .withAttributes({{"style", val("border: 3px solid ##77bbee")}, {"size", val(2)}})
                 .textInput();
 
-        this->appendChild(beakerCnv);
-        this->appendChild(canvas1CurrentCellColor_tinp);
-
-        builder.br();
-
+        HybridNode<string> *cmdarea;
         CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(this));
-        string *cmdarea_text = new string("This is a textarea.");
-        auto *cmdarea = textBuilder.withName("cmdarea").textarea(cmdarea_text, 6, 80);
         textBuilder.br();
-        auto *cmdarea_lbl = textBuilder.label(cmdarea, "CMD:", true);
+        string *cmdarea_text = new string("This is a textarea.");
+        auto *cmdarea_lbl = textBuilder.label(cmdarea, "CMD:", false);
+        textBuilder.br();
+
+        cmdarea = textBuilder.withName("cmdarea").textarea(cmdarea_text, 6, 60);
         textBuilder.br();
 
         auto *ruleFrameWidth_tinp = intBuilder.withName("ruleFrameWidth_tinp")
                                         .withCppVal(&this->cppVal_->gridWidth)
                                         .withAttributes({{"class", val("small_width")}})
                                         .textInput();
+
         auto *ruleFrameWidth_tinp_lbl =
             intBuilder.label(ruleFrameWidth_tinp, "Width of new rule frames.", true);
+
         auto *ruleFrameHeight_tinp = intBuilder.withName("ruleFrameHeight_tinp")
                                          .withCppVal(&this->cppVal_->gridHeight)
                                          .withAttributes({{"class", val("small_width")}})
                                          .textInput();
+
         auto *ruleFrameHeight_tinp_lbl =
             intBuilder.label(ruleFrameHeight_tinp, "Height of new rule frames.", true);
 
@@ -133,6 +147,13 @@ class BeakerNode : public HybridNode<V> {
 
         auto *newReactionRule_btn =
             intBuilder.button("newReactionRule_btn", "Make reaction rule", makeNewReactionRule_el);
+
+        textBuilder.br();
+
+        auto *iterationCounter_ = intBuilder.withAttributes({{"class", val("small_width")}})
+                                      .withCppVal(&this->cppVal_->iterationCount_)
+                                      .withName("iterationCounter_")
+                                      .textInput();
 
         textBuilder.br();
     }
@@ -168,17 +189,13 @@ struct PixelReactor : public PageContent {
         CLNodeFactory<HybridNode, double, double> builder("div", "maindiv");
         auto *maindiv = builder.build();
 
-        CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(maindiv));
-        CLNodeFactory<HybridNode, int, int> intBuilder(builder.withChildrenOf(maindiv));
-
-        CLNodeFactory<HybridNode, unsigned char, double> canvasBuilder(builder);
-
         CLNodeFactory<BeakerNode, Beaker<unsigned char>, int> beakerBuilder(
             builder.withChildrenOf(maindiv));
-        auto *b = new Beaker<unsigned char>();
-        auto *bn = beakerBuilder.withTag("div").withName("mainBeaker").withCppVal(b).build();
+        Beaker<unsigned char> *b = new Beaker<unsigned char>();
+        BeakerNode<Beaker<unsigned char>> *bn = beakerBuilder.withTag("div").withName("mainBeaker").withCppVal(b).build();
+        b->beakerNode_ = bn;
 
-        printf("Setup complete!\n");
+        cout << "Setup complete!" << endl;
         return maindiv;
     }
 };
