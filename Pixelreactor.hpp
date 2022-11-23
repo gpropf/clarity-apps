@@ -10,48 +10,7 @@
 using namespace clarity;
 
 template <typename U>
-class BeakerNode;
-
-/**
- * @brief Represents a single "reaction vessel" in which our experiments can take place. The
- * reaction rules that determine how patterns in the grid transform will use the same CanvasGrid
- * control the beaker itself does.
- *
- * @tparam V This is the type we are using for the grid elements. The original app I wrote in
- * ClojureScript used small positive integers for the colors so the expected type here is `unsigned
- * char`. Theoretically, it's possible to use other types though.
- */
-template <typename V>
-class Beaker {
-   public:
-
-    BeakerNode<Beaker<V>> *beakerNode_;  //!< Pointer back to containing BN so that BN->refresh()
-                                         //!< can be called when this updates.
-    void makeNewReactionRule() {
-        this->iterationCount_++;
-        this->jiveCount++;
-        cout << "makeNewReactionRule(), jiveCount = " << jiveCount << endl;
-        cout << "makeNewReactionRule(), iterationCount_ = " << this->iterationCount_ << endl;
-        beakerNode_->refresh();
-    }
-
-   // inline void setBeakerNode(BeakerNode<Beaker<V>> * beakerNode) { this->beakerNode_ = beakerNode;}
-    static void makeNewReactionRule_st(Beaker *b) { b->makeNewReactionRule(); }
-
-   protected:
-    int iterationCount_ =
-        0;                //!< Counter that advances every time the rules are applied to the grid.
-    int jiveCount = 0;    //!< A phony counter just to prove we can maintain state using the 'make
-                          //!< rule' button as the app runs.
-    int gridWidth = 60;   //!< Width of beaker grid in cells.
-    int gridHeight = 40;  //!< Height of beaker grid in cells.
-    V *gridArray;         //!< The actual grid data to be used by the CanvasGrid in BeakerNode.
-
-    template <typename U>
-    friend class BeakerNode;
-
-   
-};
+class Beaker;
 
 /**
  * @brief This is the complex control that allows the user to edit and run the Beaker. Probably a
@@ -60,8 +19,8 @@ class Beaker {
  * @tparam V This 'V' is actually the Beaker objects themselves. So the `cppVal_` member of this
  * kind of node points to a Beaker.
  */
-template <typename V>
-class BeakerNode : public HybridNode<V> {
+template <class B>
+class BeakerNode : public HybridNode<B> {
    private:
     // ClarityNode *iterationCounter_;
 
@@ -69,22 +28,19 @@ class BeakerNode : public HybridNode<V> {
     BeakerNode(const string &name, const string &tag, bool useExistingDOMElement,
                ClarityNode::AttachmentMode attachmentMode = ClarityNode::AttachmentMode::NEW,
                const string &attachmentId = "")
-        : HybridNode<V>(name, tag, useExistingDOMElement, attachmentMode, attachmentId) {}
+        : HybridNode<B>(name, tag, useExistingDOMElement, attachmentMode, attachmentId) {}
 
     virtual void refresh() {
         // this->cppVal_->iterationCount_++;
         //
-        HybridNode<V>::refresh();
+        HybridNode<B>::refresh();
 
-        // for (auto child : this->children_) {
-        //     child->refresh();
-        // }
-        // this->iterationCounter_->refresh();
+        
     }
 
     virtual void finalize() {
-        //this->cppVal_->beakerNode_ = &*this;
-        //this->cppVal_->setBeakerNode(this);
+         this->cppVal_->beakerNode_ = this;
+        // this->cppVal_->setBeakerNode(this);
 
         val JSProxyNode = val::global("JSProxyNode");
         val doNothing = JSProxyNode["doNothing"];
@@ -150,9 +106,9 @@ class BeakerNode : public HybridNode<V> {
 
         textBuilder.br();
 
-        auto *iterationCounter_ = intBuilder.withAttributes({{"class", val("small_width")}})
+        auto *iterationCounter = intBuilder.withAttributes({{"class", val("small_width")}})
                                       .withCppVal(&this->cppVal_->iterationCount_)
-                                      .withName("iterationCounter_")
+                                      .withName("iterationCounter")
                                       .textInput();
 
         textBuilder.br();
@@ -163,6 +119,50 @@ class BeakerNode : public HybridNode<V> {
              << endl;
     }
 };
+
+/**
+ * @brief Represents a single "reaction vessel" in which our experiments can take place. The
+ * reaction rules that determine how patterns in the grid transform will use the same CanvasGrid
+ * control the beaker itself does.
+ *
+ * @tparam V This is the type we are using for the grid elements. The original app I wrote in
+ * ClojureScript used small positive integers for the colors so the expected type here is `unsigned
+ * char`. Theoretically, it's possible to use other types though.
+ */
+template <typename V>
+class Beaker {
+   public:
+    static Beaker<V> *staticBeaker;
+    static std::function<void()> lbd;
+    //static std::function<void()> makeNewReactionRuleLbd;
+
+    int jiveCount = 0;    //!< A phony counter just to prove we can maintain state using the 'make
+                          //!< rule' button as the app runs.
+    int gridWidth = 60;   //!< Width of beaker grid in cells.
+    int gridHeight = 40;  //!< Height of beaker grid in cells.
+    V *gridArray;         //!< The actual grid data to be used by the CanvasGrid in BeakerNode.
+    int iterationCount_ =
+        0;  //!< Counter that advances every time the rules are applied to the grid.
+    BeakerNode<Beaker<V>> *beakerNode_;  //!< Pointer back to containing BN so that BN->refresh()
+                                         //!< can be called when this updates.
+    void makeNewReactionRule() {
+        this->iterationCount_++;
+        this->jiveCount++;
+        cout << "makeNewReactionRule(), jiveCount = " << jiveCount << endl;
+        cout << "makeNewReactionRule(), iterationCount_ = " << this->iterationCount_ << endl;
+        beakerNode_->refresh();
+    }
+
+    // inline void setBeakerNode(BeakerNode<Beaker<V>> * beakerNode) { this->beakerNode_ =
+    // beakerNode;}
+    static void makeNewReactionRule_st(Beaker *b) { b->makeNewReactionRule(); }
+
+   protected:
+    // template <typename U>
+    friend class BeakerNode<V>;
+};
+
+//Beaker *Beaker<unsigned char>::staticBeaker = nullptr;
 
 EMSCRIPTEN_BINDINGS(PixelReactor) {
     class_<HybridNode<Beaker<unsigned char>>>("BeakerNode_h")
@@ -192,9 +192,15 @@ struct PixelReactor : public PageContent {
         CLNodeFactory<BeakerNode, Beaker<unsigned char>, int> beakerBuilder(
             builder.withChildrenOf(maindiv));
         Beaker<unsigned char> *b = new Beaker<unsigned char>();
-        BeakerNode<Beaker<unsigned char>> *bn = beakerBuilder.withTag("div").withName("mainBeaker").withCppVal(b).build();
+        BeakerNode<Beaker<unsigned char>> *bn =
+            beakerBuilder.withTag("div").withName("mainBeaker").withCppVal(b).build();
         b->beakerNode_ = bn;
 
+
+        //Beaker<unsigned char>::makeNewReactionRuleLbd = [=] { Beaker<unsigned char>::staticBeaker->makeNewReactionRule(); };
+         
+
+        // maindiv->appendChild(bn);
         cout << "Setup complete!" << endl;
         return maindiv;
     }
