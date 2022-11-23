@@ -30,34 +30,44 @@ class BeakerNode : public HybridNode<B> {
                const string &attachmentId = "")
         : HybridNode<B>(name, tag, useExistingDOMElement, attachmentMode, attachmentId) {}
 
-    virtual void refresh() {
-        // this->cppVal_->iterationCount_++;
-        //
-        HybridNode<B>::refresh();
+    /**
+     * @brief In any node representing a complex object a call to HybridNode::refresh() is mandatory
+     * as that is the only way child nodes representing values within the complex structure can be
+     * updated when the object state changes.
+     *
+     */
+    inline virtual void refresh() { HybridNode<B>::refresh(); }
 
-        
-    }
-
+    /**
+     * @brief This overload of `finalize()` shows that in the case of complex data types with many
+     * subcomponents the finalize method is reponsible for setting up the nodes responsible for
+     * manipulating them. This is also where essential things like the pointer in the model object
+     * that points back to the GUI node are set up. This pointer is what allows the model object to
+     * automatically update the interface when its internal state changes.
+     *
+     */
     virtual void finalize() {
-        this->cle_.set("clarityNode", this);
-         this->cle_.set("beaker", this->cppVal_);
         this->nodelog("BeakerNode::finalize(): ");
-         this->cppVal_->beakerNode_ = this;
-        // this->cppVal_->setBeakerNode(this);
+
+        this->cle_.set("clarityNode", this);
+
+        // This pointer allows the Beaker to see its BeakerNode and automatically update it when it
+        // changes state.
+        this->cppVal_->beakerNode_ = this;
 
         val JSProxyNode = val::global("JSProxyNode");
         val doNothing = JSProxyNode["doNothing"];
         val Module = val::global("Module");
         val Beaker = Module["Beaker"];
-        val elgMakeNewReactionRuleButtonClicked = val::global("elgMakeNewReactionRuleButtonClicked");
-        val elgMakeNewReactionRuleButtonClicked2 = val::global("elgMakeNewReactionRuleButtonClicked2");
 
-        val makeNewReactionRule_st = Beaker["makeNewReactionRule_st"];
+        val elgMakeNewReactionRuleButtonClicked =
+            val::global("elgMakeNewReactionRuleButtonClicked");
+
         val makeEl = val::global("makeEl");
-        //val makeNewReactionRule_el = makeEl(*(this->cppVal_), makeNewReactionRule_st);
-        val makeNewReactionRule_el = elgMakeNewReactionRuleButtonClicked(this->cle_);
-        val makeNewReactionRule_el2 = elgMakeNewReactionRuleButtonClicked2(this->cppVal_);
-        //val makeNewReactionRule_el = val::global("makeNewReactionRule_el");
+        // val makeNewReactionRule_el = makeEl(*(this->cppVal_), makeNewReactionRule_st);
+
+        val makeNewReactionRule_el = elgMakeNewReactionRuleButtonClicked(this->cppVal_);
+        // val makeNewReactionRule_el = val::global("makeNewReactionRule_el");
 
         CLNodeFactory<HybridNode, string, int> builder("div", "testBeaker");
         CLNodeFactory<HybridNode, int, int> intBuilder(builder.withChildrenOf(this));
@@ -110,14 +120,14 @@ class BeakerNode : public HybridNode<B> {
         textBuilder.br();
 
         auto *newReactionRule_btn =
-            intBuilder.button("newReactionRule_btn", "Make reaction rule", makeNewReactionRule_el2);
+            intBuilder.button("newReactionRule_btn", "Make reaction rule", makeNewReactionRule_el);
 
         textBuilder.br();
 
         auto *iterationCounter = intBuilder.withAttributes({{"class", val("small_width")}})
-                                      .withCppVal(&this->cppVal_->iterationCount_)
-                                      .withName("iterationCounter")
-                                      .textInput();
+                                     .withCppVal(&this->cppVal_->iterationCount_)
+                                     .withName("iterationCounter")
+                                     .textInput();
 
         textBuilder.br();
     }
@@ -140,19 +150,10 @@ class BeakerNode : public HybridNode<B> {
 template <typename V>
 class Beaker {
    public:
-    static Beaker<V> *staticBeaker;
-    static std::function<void()> lbd;
-    //static std::function<void()> makeNewReactionRuleLbd;
+    int jiveCount = 0;  //!< A phony counter just to prove we can maintain state using the 'make
+                        //!< rule' button as the app runs.
+                        // int gridWidth = 60;   //!< Width of beaker grid in cells.
 
-    int jiveCount = 0;    //!< A phony counter just to prove we can maintain state using the 'make
-                          //!< rule' button as the app runs.
-    int gridWidth = 60;   //!< Width of beaker grid in cells.
-    int gridHeight = 40;  //!< Height of beaker grid in cells.
-    V *gridArray;         //!< The actual grid data to be used by the CanvasGrid in BeakerNode.
-    int iterationCount_ =
-        0;  //!< Counter that advances every time the rules are applied to the grid.
-    BeakerNode<Beaker<V>> *beakerNode_;  //!< Pointer back to containing BN so that BN->refresh()
-                                         //!< can be called when this updates.
     void makeNewReactionRule() {
         this->iterationCount_++;
         this->jiveCount++;
@@ -161,20 +162,24 @@ class Beaker {
         beakerNode_->refresh();
     }
 
-    // inline void setBeakerNode(BeakerNode<Beaker<V>> * beakerNode) { this->beakerNode_ =
-    // beakerNode;}
     static void makeNewReactionRule_st(Beaker *b) { b->makeNewReactionRule(); }
 
    protected:
+    int gridWidth = 60;   //!< Width of beaker grid in cells.
+    int gridHeight = 40;  //!< Height of beaker grid in cells.
+    V *gridArray;         //!< The actual grid data to be used by the CanvasGrid in BeakerNode.
+    int iterationCount_ =
+        0;  //!< Counter that advances every time the rules are applied to the grid.
+    BeakerNode<Beaker<V>> *beakerNode_;  //!< Pointer back to containing BN so that BN->refresh()
+                                         //!< can be called when this updates.
     // template <typename U>
-    friend class BeakerNode<V>;
+    friend class BeakerNode<Beaker<V>>;
 };
-
-//Beaker *Beaker<unsigned char>::staticBeaker = nullptr;
 
 EMSCRIPTEN_BINDINGS(PixelReactor) {
     // class_<HybridNode<Beaker<unsigned char>>>("HybridNode_h")
-    //     .function("doNothing", &HybridNode<Beaker<unsigned char>>::doNothing, allow_raw_pointers());
+    //     .function("doNothing", &HybridNode<Beaker<unsigned char>>::doNothing,
+    //     allow_raw_pointers());
 
     class_<BeakerNode<Beaker<unsigned char>>>("BeakerNode_h")
         .function("doNothing", &BeakerNode<Beaker<unsigned char>>::doNothing, allow_raw_pointers());
@@ -195,23 +200,17 @@ struct PixelReactor : public PageContent {
     int *ruleFrameHeight = new int(3);
 
     ClarityNode *content(ClarityNode *innerContent = nullptr) {
-        val CLElement = val::global("CLElement");
-        // val blackbody_st = ClarityNode::JSProxyNode_["blackbody_st"];
         CLNodeFactory<HybridNode, double, double> builder("div", "maindiv");
         auto *maindiv = builder.build();
 
         CLNodeFactory<BeakerNode, Beaker<unsigned char>, int> beakerBuilder(
             builder.withChildrenOf(maindiv));
+
         Beaker<unsigned char> *b = new Beaker<unsigned char>();
+
         BeakerNode<Beaker<unsigned char>> *bn =
             beakerBuilder.withTag("div").withName("mainBeaker").withCppVal(b).build();
-        b->beakerNode_ = bn;
 
-
-        //Beaker<unsigned char>::makeNewReactionRuleLbd = [=] { Beaker<unsigned char>::staticBeaker->makeNewReactionRule(); };
-         
-
-        // maindiv->appendChild(bn);
         cout << "Setup complete!" << endl;
         return maindiv;
     }
