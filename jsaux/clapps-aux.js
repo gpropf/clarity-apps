@@ -17,3 +17,35 @@ function makeEl(obj, method) {
         method(obj);
     }
 }
+
+function elgMakeNewReactionRuleButtonClicked (jsProxyNode) {
+    return function (e) {
+      //jsProxyNode.clarityNode.updateNodeFromDom();
+      //Module.ClarityNode.updateNodeFromDomById(jsProxyNode.id)
+      console.log(jsProxyNode.clarityNode)
+      if (jsProxyNode.boundField != undefined)
+        jsProxyNode.nodelog("MakeNewReactionRuleButtonClicked Clicked: " + jsProxyNode.domElement[jsProxyNode.boundField]);
+      else
+        jsProxyNode.nodelog("MakeNewReactionRuleButtonClicked Clicked, no boundField");
+    }
+  }
+
+
+  function elgMakeNewReactionRuleButtonClicked2 (beaker) {
+    return function (e) {
+      //jsProxyNode.clarityNode.updateNodeFromDom();
+      //Module.ClarityNode.updateNodeFromDomById(jsProxyNode.id)
+      console.log(beaker)
+      beaker.makeNewReactionRule();
+    //   if (jsProxyNode.boundField != undefined)
+    //     jsProxyNode.nodelog("MakeNewReactionRuleButtonClicked Clicked: " + jsProxyNode.domElement[jsProxyNode.boundField]);
+    //   else
+    //     jsProxyNode.nodelog("MakeNewReactionRuleButtonClicked Clicked, no boundField");
+    }
+  }
+
+
+function makeNewReactionRule_el(ev) {
+    console.log("Event: " + ev);
+    console.log("makeNewReactionRule_el()");
+}

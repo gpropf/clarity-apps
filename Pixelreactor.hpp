@@ -39,6 +39,9 @@ class BeakerNode : public HybridNode<B> {
     }
 
     virtual void finalize() {
+        this->cle_.set("clarityNode", this);
+         this->cle_.set("beaker", this->cppVal_);
+        this->nodelog("BeakerNode::finalize(): ");
          this->cppVal_->beakerNode_ = this;
         // this->cppVal_->setBeakerNode(this);
 
@@ -46,10 +49,15 @@ class BeakerNode : public HybridNode<B> {
         val doNothing = JSProxyNode["doNothing"];
         val Module = val::global("Module");
         val Beaker = Module["Beaker"];
+        val elgMakeNewReactionRuleButtonClicked = val::global("elgMakeNewReactionRuleButtonClicked");
+        val elgMakeNewReactionRuleButtonClicked2 = val::global("elgMakeNewReactionRuleButtonClicked2");
 
         val makeNewReactionRule_st = Beaker["makeNewReactionRule_st"];
         val makeEl = val::global("makeEl");
-        val makeNewReactionRule_el = makeEl(*(this->cppVal_), makeNewReactionRule_st);
+        //val makeNewReactionRule_el = makeEl(*(this->cppVal_), makeNewReactionRule_st);
+        val makeNewReactionRule_el = elgMakeNewReactionRuleButtonClicked(this->cle_);
+        val makeNewReactionRule_el2 = elgMakeNewReactionRuleButtonClicked2(this->cppVal_);
+        //val makeNewReactionRule_el = val::global("makeNewReactionRule_el");
 
         CLNodeFactory<HybridNode, string, int> builder("div", "testBeaker");
         CLNodeFactory<HybridNode, int, int> intBuilder(builder.withChildrenOf(this));
@@ -102,7 +110,7 @@ class BeakerNode : public HybridNode<B> {
         textBuilder.br();
 
         auto *newReactionRule_btn =
-            intBuilder.button("newReactionRule_btn", "Make reaction rule", makeNewReactionRule_el);
+            intBuilder.button("newReactionRule_btn", "Make reaction rule", makeNewReactionRule_el2);
 
         textBuilder.br();
 
@@ -165,8 +173,11 @@ class Beaker {
 //Beaker *Beaker<unsigned char>::staticBeaker = nullptr;
 
 EMSCRIPTEN_BINDINGS(PixelReactor) {
-    class_<HybridNode<Beaker<unsigned char>>>("BeakerNode_h")
-        .function("doNothing", &HybridNode<Beaker<unsigned char>>::doNothing, allow_raw_pointers());
+    // class_<HybridNode<Beaker<unsigned char>>>("HybridNode_h")
+    //     .function("doNothing", &HybridNode<Beaker<unsigned char>>::doNothing, allow_raw_pointers());
+
+    class_<BeakerNode<Beaker<unsigned char>>>("BeakerNode_h")
+        .function("doNothing", &BeakerNode<Beaker<unsigned char>>::doNothing, allow_raw_pointers());
 
     class_<Beaker<unsigned char>>("Beaker")
         .function("makeNewReactionRule", &Beaker<unsigned char>::makeNewReactionRule,
