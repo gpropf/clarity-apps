@@ -79,72 +79,99 @@ class BeakerNode : public HybridNode<B> {
             canvasBuilder.withName("canvas1")
                 .withTag("canvas")
                 .withAttributes({{"style", val("border: 1px solid green")},
-                                 {"width", val(600)},
-                                 {"height", val(400)}})
-                .canvasGrid(60, 40, 600, 400);
+                                 {"width", val(this->cppVal_->gridPixelWidth_)},
+                                 {"height", val(this->cppVal_->gridPixelHeight_)}})
+                .canvasGrid(this->cppVal_->gridWidth_, this->cppVal_->gridHeight_,
+                            this->cppVal_->gridPixelWidth_, this->cppVal_->gridPixelHeight_);
 
         beakerCnv->setCurrentCellVal(2);
 
-        auto *canvas1CurrentCellColor_tinp =
-            canvasBuilder.withName("currentCellColor_tinp")
-                .withCppVal(beakerCnv->getPtr2CurrentCellVal())
-                .withAttributes({{"style", val("border: 3px solid ##77bbee")}, {"size", val(2)}})
-                .textInput();
+        if (!this->cppVal_->isReactionRule_) {
+            auto *canvas1CurrentCellColor_tinp =
+                canvasBuilder.withName("currentCellColor_tinp")
+                    .withCppVal(beakerCnv->getPtr2CurrentCellVal())
+                    .withAttributes(
+                        {{"style", val("border: 3px solid ##77bbee")}, {"size", val(2)}})
+                    .textInput();
 
-        HybridNode<string> *cmdarea;
-        CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(this));
-        textBuilder.br();
-        string *cmdarea_text = new string("This is a textarea.");
-        auto *cmdarea_lbl = textBuilder.label(cmdarea, "CMD:", false);
-        textBuilder.br();
+            HybridNode<string> *cmdarea;
+            CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(this));
+            textBuilder.br();
+            string *cmdarea_text = new string("This is a textarea.");
+            auto *cmdarea_lbl = textBuilder.label(cmdarea, "CMD:", false);
+            textBuilder.br();
 
-        cmdarea = textBuilder.withName("cmdarea").textarea(cmdarea_text, 6, 60);
-        textBuilder.br();
+            cmdarea = textBuilder.withName("cmdarea").textarea(cmdarea_text, 6, 60);
+            textBuilder.br();
 
-        auto *ruleFrameWidth_tinp = intBuilder.withName("ruleFrameWidth_tinp")
-                                        .withCppVal(&this->cppVal_->gridWidth_)
-                                        .withAttributes({{"class", val("small_width")}})
-                                        .textInput();
+            auto *beakerGridWidth_tinp = intBuilder.withName("beakerGridWidth_tinp")
+                                             .withCppVal(&this->cppVal_->gridWidth_)
+                                             .withAttributes({{"class", val("small_width")}})
+                                             .textInput();
 
-        auto *ruleFrameWidth_tinp_lbl =
-            intBuilder.label(ruleFrameWidth_tinp, "Width of new rule frames.", true);
+            auto *beakerGridWidth_tinp_lbl =
+                intBuilder.label(beakerGridWidth_tinp, "Beaker grid width.", true);
 
-        auto *ruleFrameHeight_tinp = intBuilder.withName("ruleFrameHeight_tinp")
-                                         .withCppVal(&this->cppVal_->gridHeight_)
-                                         .withAttributes({{"class", val("small_width")}})
+              
+
+            auto *beakerGridHeight_tinp = intBuilder.withName("beakerGridHeight_tinp")
+                                              .withCppVal(&this->cppVal_->gridHeight_)
+                                              .withAttributes({{"class", val("small_width")}})
+                                              .textInput();
+
+            auto *beakerGridHeight_tinp_lbl =
+                intBuilder.label(beakerGridHeight_tinp, "Beaker grid height.", true);
+            
+            textBuilder.br();
+
+            auto *ruleFrameWidth_tinp = intBuilder.withName("ruleFrameWidth_tinp")
+                                            .withCppVal(&this->cppVal_->ruleGridWidth_)
+                                            .withAttributes({{"class", val("small_width")}})
+                                            .textInput();
+
+            auto *ruleFrameWidth_tinp_lbl =
+                intBuilder.label(ruleFrameWidth_tinp, "Width of new rules.", true);
+
+            auto *ruleFrameHeight_tinp = intBuilder.withName("ruleFrameHeight_tinp")
+                                             .withCppVal(&this->cppVal_->ruleGridHeight_)
+                                             .withAttributes({{"class", val("small_width")}})
+                                             .textInput();
+
+            auto *ruleFrameHeight_tinp_lbl =
+                intBuilder.label(ruleFrameHeight_tinp, "Height of new rules.", true);
+
+            textBuilder.br();
+
+            auto *newReactionRule_btn = intBuilder.button(
+                "newReactionRule_btn", "Make reaction rule", makeNewReactionRule_el);
+
+            textBuilder.br();
+
+            auto *iterationCounter = intBuilder.withAttributes({{"class", val("small_width")}})
+                                         .withCppVal(&this->cppVal_->iterationCount_)
+                                         .withName("iterationCounter")
                                          .textInput();
 
-        auto *ruleFrameHeight_tinp_lbl =
-            intBuilder.label(ruleFrameHeight_tinp, "Height of new rule frames.", true);
+            reactionRulesDiv_ = intBuilder.withTag("div").withName("reactionRulesDiv").build();
 
-        textBuilder.br();
+            // CLNodeFactory<BeakerNode, ::Beaker<unsigned char>, int> reactionRulesBuilder(
+            //     intBuilder.withChildrenOf(reactionRulesDiv_));
 
-        auto *newReactionRule_btn =
-            intBuilder.button("newReactionRule_btn", "Make reaction rule", makeNewReactionRule_el);
+            // for (auto *rr : this->cppVal_->reactionRules_) {
+            // }
 
-        textBuilder.br();
-
-        auto *iterationCounter = intBuilder.withAttributes({{"class", val("small_width")}})
-                                     .withCppVal(&this->cppVal_->iterationCount_)
-                                     .withName("iterationCounter")
-                                     .textInput();
-
-        auto *reactionRulesDiv = intBuilder.withTag("div").withName("reactionRulesDiv").build();
-
-        CLNodeFactory<BeakerNode, ::Beaker<unsigned char>, int> reactionRulesBuilder(
-            intBuilder.withChildrenOf(reactionRulesDiv));
-
-        for (auto *rr: this->cppVal_->reactionRules_) {
-
+            textBuilder.br();
         }
-
-        textBuilder.br();
     }
 
     inline virtual void doNothing() {
         cout << "This method exists so that Embind will create a type when this method in bound."
              << endl;
     }
+
+   public:
+    ClarityNode *reactionRulesDiv_;  // FIXME: Would be nice to keep this protected or private but
+                                     // this is an easy way to let Beaker see it for now.
 };
 
 /**
@@ -159,8 +186,13 @@ class BeakerNode : public HybridNode<B> {
 template <typename V>
 class Beaker {
    public:
-    Beaker(int gridWidth, int gridHeight, bool isReactionRule = false)
-        : gridWidth_(gridWidth), gridHeight_(gridHeight), isReactionRule_(isReactionRule) {}
+    Beaker(int gridWidth, int gridHeight, int gridPixelWidth, int gridPixelHeight,
+           bool isReactionRule = false)
+        : gridWidth_(gridWidth),
+          gridHeight_(gridHeight),
+          gridPixelWidth_(gridPixelWidth),
+          gridPixelHeight_(gridPixelHeight),
+          isReactionRule_(isReactionRule) {}
 
     int jiveCount = 0;  //!< A phony counter just to prove we can maintain state using the 'make
                         //!< rule' button as the app runs.
@@ -171,8 +203,18 @@ class Beaker {
         cout << "makeNewReactionRule(), jiveCount = " << jiveCount << endl;
         cout << "makeNewReactionRule(), iterationCount_ = " << this->iterationCount_ << endl;
 
-        Beaker *reactionRule = new Beaker(this->ruleGridWidth_, this->ruleGridHeight_, true);
+        Beaker *reactionRule =
+            new Beaker(this->ruleGridWidth_, this->ruleGridHeight_, 150, 150, true);
         this->reactionRules_.push_back(reactionRule);
+
+        CLNodeFactory<BeakerNode, Beaker<unsigned char>, int> beakerBuilder("div", "rr");
+
+        BeakerNode<Beaker<unsigned char>> *bn =
+            beakerBuilder.withChildrenOf(beakerNode_->reactionRulesDiv_)
+                .withTag("div")
+                .withName("reactionRule")
+                .withCppVal(reactionRule)
+                .build();
         beakerNode_->refresh();
     }
 
@@ -182,21 +224,22 @@ class Beaker {
     bool isReactionRule_ = false;  //!< Set to true if this Beaker is being used as a reaction rule
                                    //!< for an enclosing Beaker.
 
+    int gridPixelWidth_ = 600;   //!< Width in pixels of beaker grid.
+    int gridPixelHeight_ = 400;  //!< Height in pixels of beaker grid.
+
     int gridWidth_ = 60;   //!< Width of beaker grid in cells.
     int gridHeight_ = 40;  //!< Height of beaker grid in cells.
 
     int ruleGridWidth_ = 5;   //!< Width of new rule grid in cells.
     int ruleGridHeight_ = 3;  //!< Height of new rule grid in cells.
 
-
-
-    V *gridArray;          //!< The actual grid data to be used by the CanvasGrid in BeakerNode.
+    V *gridArray;  //!< The actual grid data to be used by the CanvasGrid in BeakerNode.
     int iterationCount_ =
         0;  //!< Counter that advances every time the rules are applied to the grid.
     BeakerNode<Beaker<V>> *beakerNode_;  //!< Pointer back to containing BN so that BN->refresh()
                                          //!< can be called when this updates.
 
-    vector<Beaker*> reactionRules_;
+    vector<Beaker *> reactionRules_;
     // template <typename U>
     friend class BeakerNode<Beaker<V>>;
 };
@@ -209,11 +252,10 @@ EMSCRIPTEN_BINDINGS(PixelReactor) {
     class_<BeakerNode<Beaker<unsigned char>>>("BeakerNode_h")
         .function("doNothing", &BeakerNode<Beaker<unsigned char>>::doNothing, allow_raw_pointers());
 
-    class_<Beaker<unsigned char>>("Beaker")
-        .function("makeNewReactionRule", &Beaker<unsigned char>::makeNewReactionRule,
-                  allow_raw_pointers())
-        .class_function("makeNewReactionRule_st", &Beaker<unsigned char>::makeNewReactionRule_st,
-                        allow_raw_pointers());
+    class_<Beaker<unsigned char>>("Beaker").function(
+        "makeNewReactionRule", &Beaker<unsigned char>::makeNewReactionRule, allow_raw_pointers());
+    // .class_function("makeNewReactionRule_st", &Beaker<unsigned char>::makeNewReactionRule_st,
+    //                 allow_raw_pointers());
 }
 
 /**
@@ -231,7 +273,7 @@ struct PixelReactor : public PageContent {
         CLNodeFactory<BeakerNode, Beaker<unsigned char>, int> beakerBuilder(
             builder.withChildrenOf(maindiv));
 
-        Beaker<unsigned char> *b = new Beaker<unsigned char>(60, 40);
+        Beaker<unsigned char> *b = new Beaker<unsigned char>(60, 40, 600, 400);
 
         BeakerNode<Beaker<unsigned char>> *bn =
             beakerBuilder.withTag("div").withName("mainBeaker").withCppVal(b).build();
