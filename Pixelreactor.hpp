@@ -102,7 +102,7 @@ class BeakerNode : public HybridNode<B> {
         textBuilder.br();
 
         auto *ruleFrameWidth_tinp = intBuilder.withName("ruleFrameWidth_tinp")
-                                        .withCppVal(&this->cppVal_->gridWidth)
+                                        .withCppVal(&this->cppVal_->gridWidth_)
                                         .withAttributes({{"class", val("small_width")}})
                                         .textInput();
 
@@ -110,7 +110,7 @@ class BeakerNode : public HybridNode<B> {
             intBuilder.label(ruleFrameWidth_tinp, "Width of new rule frames.", true);
 
         auto *ruleFrameHeight_tinp = intBuilder.withName("ruleFrameHeight_tinp")
-                                         .withCppVal(&this->cppVal_->gridHeight)
+                                         .withCppVal(&this->cppVal_->gridHeight_)
                                          .withAttributes({{"class", val("small_width")}})
                                          .textInput();
 
@@ -128,6 +128,15 @@ class BeakerNode : public HybridNode<B> {
                                      .withCppVal(&this->cppVal_->iterationCount_)
                                      .withName("iterationCounter")
                                      .textInput();
+
+        auto *reactionRulesDiv = intBuilder.withTag("div").withName("reactionRulesDiv").build();
+
+        CLNodeFactory<BeakerNode, ::Beaker<unsigned char>, int> reactionRulesBuilder(
+            intBuilder.withChildrenOf(reactionRulesDiv));
+
+        for (auto *rr: this->cppVal_->reactionRules_) {
+
+        }
 
         textBuilder.br();
     }
@@ -150,28 +159,44 @@ class BeakerNode : public HybridNode<B> {
 template <typename V>
 class Beaker {
    public:
+    Beaker(int gridWidth, int gridHeight, bool isReactionRule = false)
+        : gridWidth_(gridWidth), gridHeight_(gridHeight), isReactionRule_(isReactionRule) {}
+
     int jiveCount = 0;  //!< A phony counter just to prove we can maintain state using the 'make
                         //!< rule' button as the app runs.
-                        // int gridWidth = 60;   //!< Width of beaker grid in cells.
 
     void makeNewReactionRule() {
         this->iterationCount_++;
         this->jiveCount++;
         cout << "makeNewReactionRule(), jiveCount = " << jiveCount << endl;
         cout << "makeNewReactionRule(), iterationCount_ = " << this->iterationCount_ << endl;
+
+        Beaker *reactionRule = new Beaker(this->ruleGridWidth_, this->ruleGridHeight_, true);
+        this->reactionRules_.push_back(reactionRule);
         beakerNode_->refresh();
     }
 
     static void makeNewReactionRule_st(Beaker *b) { b->makeNewReactionRule(); }
 
    protected:
-    int gridWidth = 60;   //!< Width of beaker grid in cells.
-    int gridHeight = 40;  //!< Height of beaker grid in cells.
-    V *gridArray;         //!< The actual grid data to be used by the CanvasGrid in BeakerNode.
+    bool isReactionRule_ = false;  //!< Set to true if this Beaker is being used as a reaction rule
+                                   //!< for an enclosing Beaker.
+
+    int gridWidth_ = 60;   //!< Width of beaker grid in cells.
+    int gridHeight_ = 40;  //!< Height of beaker grid in cells.
+
+    int ruleGridWidth_ = 5;   //!< Width of new rule grid in cells.
+    int ruleGridHeight_ = 3;  //!< Height of new rule grid in cells.
+
+
+
+    V *gridArray;          //!< The actual grid data to be used by the CanvasGrid in BeakerNode.
     int iterationCount_ =
         0;  //!< Counter that advances every time the rules are applied to the grid.
     BeakerNode<Beaker<V>> *beakerNode_;  //!< Pointer back to containing BN so that BN->refresh()
                                          //!< can be called when this updates.
+
+    vector<Beaker*> reactionRules_;
     // template <typename U>
     friend class BeakerNode<Beaker<V>>;
 };
@@ -206,7 +231,7 @@ struct PixelReactor : public PageContent {
         CLNodeFactory<BeakerNode, Beaker<unsigned char>, int> beakerBuilder(
             builder.withChildrenOf(maindiv));
 
-        Beaker<unsigned char> *b = new Beaker<unsigned char>();
+        Beaker<unsigned char> *b = new Beaker<unsigned char>(60, 40);
 
         BeakerNode<Beaker<unsigned char>> *bn =
             beakerBuilder.withTag("div").withName("mainBeaker").withCppVal(b).build();
