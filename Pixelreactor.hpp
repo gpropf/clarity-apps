@@ -49,7 +49,7 @@ class BeakerNode : public HybridNode<B> {
     virtual void finalize() {
         this->nodelog("BeakerNode::finalize(): ");
 
-        this->cle_.set("clarityNode", this);
+        this->jsProxyNode_.set("clarityNode", this);
 
         // This pointer allows the Beaker to see its BeakerNode and automatically update it when it
         // changes state.
