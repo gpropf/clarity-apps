@@ -94,6 +94,10 @@ class BeakerNode : public HybridNode<B> {
                         {{"style", val("border: 3px solid ##77bbee")}, {"size", val(2)}})
                     .textInput();
 
+            // canvas1CurrentCellColor_tinp->addEventListener(
+            //     [&](val ev) { cout << "COLOR CHANGED!" << endl; }, "change");
+            canvas1CurrentCellColor_tinp->addEventListener(val::global("colorChange_el"), "change");
+
             HybridNode<string> *cmdarea;
             CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(this));
             textBuilder.br();
@@ -112,8 +116,6 @@ class BeakerNode : public HybridNode<B> {
             auto *beakerGridWidth_tinp_lbl =
                 intBuilder.label(beakerGridWidth_tinp, "Beaker grid width.", true);
 
-              
-
             auto *beakerGridHeight_tinp = intBuilder.withName("beakerGridHeight_tinp")
                                               .withCppVal(&this->cppVal_->gridHeight_)
                                               .withAttributes({{"class", val("small_width")}})
@@ -121,7 +123,7 @@ class BeakerNode : public HybridNode<B> {
 
             auto *beakerGridHeight_tinp_lbl =
                 intBuilder.label(beakerGridHeight_tinp, "Beaker grid height.", true);
-            
+
             textBuilder.br();
 
             auto *ruleFrameWidth_tinp = intBuilder.withName("ruleFrameWidth_tinp")
@@ -216,6 +218,10 @@ class Beaker {
                 .withCppVal(reactionRule)
                 .build();
         beakerNode_->refresh();
+    }
+
+    INLINE void setColorReactionRules(V newColorIndex) {
+
     }
 
     static void makeNewReactionRule_st(Beaker *b) { b->makeNewReactionRule(); }

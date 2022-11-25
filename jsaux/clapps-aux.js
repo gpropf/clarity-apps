@@ -39,3 +39,8 @@ function makeNewReactionRule_el(ev) {
     console.log("Event: " + ev);
     console.log("makeNewReactionRule_el()");
 }
+
+function colorChange_el(ev) {
+    console.log("Event: " + ev);
+    console.log("colorChange_el()");
+}
