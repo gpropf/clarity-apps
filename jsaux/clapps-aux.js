@@ -18,7 +18,18 @@ function makeEl(obj, method) {
     }
 }
 
-
+function elgBeakerIterate(beaker) {
+    return function (e) {
+        //jsProxyNode.clarityNode.updateNodeFromDom();
+        //Module.ClarityNode.updateNodeFromDomById(jsProxyNode.id)
+        console.log(beaker)
+        beaker.iterate();
+        //   if (jsProxyNode.boundField != undefined)
+        //     jsProxyNode.nodelog("MakeNewReactionRuleButtonClicked Clicked: " + jsProxyNode.domElement[jsProxyNode.boundField]);
+        //   else
+        //     jsProxyNode.nodelog("MakeNewReactionRuleButtonClicked Clicked, no boundField");
+    }
+}
 
 
 function elgMakeNewReactionRuleButtonClicked(beaker) {

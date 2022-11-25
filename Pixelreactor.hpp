@@ -67,6 +67,8 @@ class BeakerNode : public HybridNode<B> {
         // val makeNewReactionRule_el = makeEl(*(this->cppVal_), makeNewReactionRule_st);
 
         val makeNewReactionRule_el = elgMakeNewReactionRuleButtonClicked(this->cppVal_);
+
+        val iterate_el = val::global("elgBeakerIterate")(this->cppVal_);
         // val makeNewReactionRule_el = val::global("makeNewReactionRule_el");
 
         CLNodeFactory<HybridNode, string, int> builder("div", "testBeaker");
@@ -75,7 +77,7 @@ class BeakerNode : public HybridNode<B> {
         CLNodeFactory<HybridNode, unsigned char, double> canvasBuilder(
             builder.withChildrenOf(this));
 
-        CanvasGrid<unsigned char> *beakerCnv =
+        CanvasGrid<unsigned char> *beakerCanvas_ =
             canvasBuilder.withName("canvas1")
                 .withTag("canvas")
                 .withAttributes({{"style", val("border: 1px solid green")},
@@ -84,19 +86,17 @@ class BeakerNode : public HybridNode<B> {
                 .canvasGrid(this->cppVal_->gridWidth_, this->cppVal_->gridHeight_,
                             this->cppVal_->gridPixelWidth_, this->cppVal_->gridPixelHeight_);
 
-        beakerCnv->setCurrentCellVal(2);
+        beakerCanvas_->setCurrentCellVal(2);
+
+        auto *canvas1CurrentCellColor_tinp =
+            canvasBuilder.withName("currentCellColor_tinp")
+                .withCppVal(beakerCanvas_->getPtr2CurrentCellVal())
+                .withAttributes({{"style", val("border: 3px solid ##77bbee")}, {"size", val(2)}})
+                .textInput();
 
         if (!this->cppVal_->isReactionRule_) {
-            auto *canvas1CurrentCellColor_tinp =
-                canvasBuilder.withName("currentCellColor_tinp")
-                    .withCppVal(beakerCnv->getPtr2CurrentCellVal())
-                    .withAttributes(
-                        {{"style", val("border: 3px solid ##77bbee")}, {"size", val(2)}})
-                    .textInput();
-
-            // canvas1CurrentCellColor_tinp->addEventListener(
-            //     [&](val ev) { cout << "COLOR CHANGED!" << endl; }, "change");
-            canvas1CurrentCellColor_tinp->addEventListener(val::global("colorChange_el"), "change");
+            // canvas1CurrentCellColor_tinp->addEventListener(val::global("colorChange_el"),
+            // "change");
 
             HybridNode<string> *cmdarea;
             CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(this));
@@ -144,6 +144,9 @@ class BeakerNode : public HybridNode<B> {
 
             textBuilder.br();
 
+            auto *iterate_btn =
+                intBuilder.button("iterate_btn", "Iterate the reaction", iterate_el);
+
             auto *newReactionRule_btn = intBuilder.button(
                 "newReactionRule_btn", "Make reaction rule", makeNewReactionRule_el);
 
@@ -174,6 +177,7 @@ class BeakerNode : public HybridNode<B> {
    public:
     ClarityNode *reactionRulesDiv_;  // FIXME: Would be nice to keep this protected or private but
                                      // this is an easy way to let Beaker see it for now.
+    CanvasGrid<unsigned char> *beakerCanvas_;
 };
 
 /**
@@ -199,29 +203,47 @@ class Beaker {
     int jiveCount = 0;  //!< A phony counter just to prove we can maintain state using the 'make
                         //!< rule' button as the app runs.
 
+    /**
+     * @brief Creates a new smaller BeakerNode to serve as a reaction pattern to run in the main
+     * grid.
+     *
+     */
     void makeNewReactionRule() {
-        this->iterationCount_++;
-        this->jiveCount++;
-        cout << "makeNewReactionRule(), jiveCount = " << jiveCount << endl;
-        cout << "makeNewReactionRule(), iterationCount_ = " << this->iterationCount_ << endl;
+        // this->iterationCount_++;
+
+        // cout << "makeNewReactionRule(), iterationCount_ = " << this->iterationCount_ << endl;
 
         Beaker *reactionRule =
             new Beaker(this->ruleGridWidth_, this->ruleGridHeight_, 150, 150, true);
         this->reactionRules_.push_back(reactionRule);
 
-        CLNodeFactory<BeakerNode, Beaker<unsigned char>, int> beakerBuilder("div", "rr");
+        CLNodeFactory<BeakerNode, Beaker<V>, int> beakerBuilder("div", "rr");
 
-        BeakerNode<Beaker<unsigned char>> *bn =
-            beakerBuilder.withChildrenOf(beakerNode_->reactionRulesDiv_)
-                .withTag("div")
-                .withName("reactionRule")
-                .withCppVal(reactionRule)
-                .build();
+        BeakerNode<Beaker<V>> *bn = beakerBuilder.withChildrenOf(beakerNode_->reactionRulesDiv_)
+                                        .withTag("div")
+                                        .withName("reactionRule")
+                                        .withCppVal(reactionRule)
+                                        .build();
         beakerNode_->refresh();
     }
 
+    /**
+     * @brief Propagates the color change in the main grid down to the reaction rules. Not
+     * currently in use.
+     *
+     * @param newColorIndex
+     * @return INLINE
+     */
     INLINE void setColorReactionRules(V newColorIndex) {
+        for (auto *reactionRule : this->reactionRules_) {
+            reactionRule->beakerNode_->beakerCanvas_->setCurrentCellVal(newColorIndex);
+        }
+    }
 
+    void iterate() {
+        this->beakerNode_->nodelog("ITERATING...");
+        this->iterationCount_++;
+        this->beakerNode_->refresh();
     }
 
     static void makeNewReactionRule_st(Beaker *b) { b->makeNewReactionRule(); }
@@ -258,8 +280,12 @@ EMSCRIPTEN_BINDINGS(PixelReactor) {
     class_<BeakerNode<Beaker<unsigned char>>>("BeakerNode_h")
         .function("doNothing", &BeakerNode<Beaker<unsigned char>>::doNothing, allow_raw_pointers());
 
-    class_<Beaker<unsigned char>>("Beaker").function(
-        "makeNewReactionRule", &Beaker<unsigned char>::makeNewReactionRule, allow_raw_pointers());
+    class_<Beaker<unsigned char>>("Beaker")
+        .function("setColorReactionRules", &Beaker<unsigned char>::setColorReactionRules,
+                  allow_raw_pointers())
+        .function("iterate", &Beaker<unsigned char>::iterate, allow_raw_pointers())
+        .function("makeNewReactionRule", &Beaker<unsigned char>::makeNewReactionRule,
+                  allow_raw_pointers());
     // .class_function("makeNewReactionRule_st", &Beaker<unsigned char>::makeNewReactionRule_st,
     //                 allow_raw_pointers());
 }
