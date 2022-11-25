@@ -1,9 +1,7 @@
 // This is an example of an add-on JavaScript script or library that can
 // be initialized along with the rest of Clarity.
 
-console.log("Hello from Clarity Apps Demo auxilliary JavaScript file!");
-
-
+console.log("clapps-aux.js loaded!");
 
 /**
  * Probably could use support for the actual event instead of just throwing it away.
@@ -19,32 +17,18 @@ function makeEl(obj, method) {
 }
 
 function elgBeakerIterate(beaker) {
-    return function (e) {
-        //jsProxyNode.clarityNode.updateNodeFromDom();
-        //Module.ClarityNode.updateNodeFromDomById(jsProxyNode.id)
+    return function (e) {        
         console.log(beaker)
-        beaker.iterate();
-        //   if (jsProxyNode.boundField != undefined)
-        //     jsProxyNode.nodelog("MakeNewReactionRuleButtonClicked Clicked: " + jsProxyNode.domElement[jsProxyNode.boundField]);
-        //   else
-        //     jsProxyNode.nodelog("MakeNewReactionRuleButtonClicked Clicked, no boundField");
+        beaker.iterate();       
     }
 }
-
 
 function elgMakeNewReactionRuleButtonClicked(beaker) {
-    return function (e) {
-        //jsProxyNode.clarityNode.updateNodeFromDom();
-        //Module.ClarityNode.updateNodeFromDomById(jsProxyNode.id)
+    return function (e) {        
         console.log(beaker)
-        beaker.makeNewReactionRule();
-        //   if (jsProxyNode.boundField != undefined)
-        //     jsProxyNode.nodelog("MakeNewReactionRuleButtonClicked Clicked: " + jsProxyNode.domElement[jsProxyNode.boundField]);
-        //   else
-        //     jsProxyNode.nodelog("MakeNewReactionRuleButtonClicked Clicked, no boundField");
+        beaker.makeNewReactionRule();        
     }
 }
-
 
 function makeNewReactionRule_el(ev) {
     console.log("Event: " + ev);

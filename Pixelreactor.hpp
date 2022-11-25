@@ -60,16 +60,15 @@ class BeakerNode : public HybridNode<B> {
         val Module = val::global("Module");
         val Beaker = Module["Beaker"];
 
-        val elgMakeNewReactionRuleButtonClicked =
-            val::global("elgMakeNewReactionRuleButtonClicked");
+        // val elgMakeNewReactionRuleButtonClicked =
+        //     val::global("elgMakeNewReactionRuleButtonClicked");
 
         val makeEl = val::global("makeEl");
-        // val makeNewReactionRule_el = makeEl(*(this->cppVal_), makeNewReactionRule_st);
 
-        val makeNewReactionRule_el = elgMakeNewReactionRuleButtonClicked(this->cppVal_);
+        val makeNewReactionRule_el =
+            val::global("elgMakeNewReactionRuleButtonClicked")(this->cppVal_);
 
         val iterate_el = val::global("elgBeakerIterate")(this->cppVal_);
-        // val makeNewReactionRule_el = val::global("makeNewReactionRule_el");
 
         CLNodeFactory<HybridNode, string, int> builder("div", "testBeaker");
         CLNodeFactory<HybridNode, int, int> intBuilder(builder.withChildrenOf(this));
@@ -77,7 +76,7 @@ class BeakerNode : public HybridNode<B> {
         CLNodeFactory<HybridNode, unsigned char, double> canvasBuilder(
             builder.withChildrenOf(this));
 
-        CanvasGrid<unsigned char> *beakerCanvas_ =
+        beakerCanvas_ =
             canvasBuilder.withName("canvas1")
                 .withTag("canvas")
                 .withAttributes({{"style", val("border: 1px solid green")},
@@ -243,6 +242,25 @@ class Beaker {
     void iterate() {
         this->beakerNode_->nodelog("ITERATING...");
         this->iterationCount_++;
+        
+
+        for (int j = 0; j < gridHeight_ ; j++) {
+            string vals = "";
+            for (int i = 0; i < gridWidth_; i++) {
+                V xyVal = this->beakerNode_->beakerCanvas_->getValXY(i,j);
+
+                if (xyVal != 0) {
+                    this->beakerNode_->beakerCanvas_->setValXYNoDraw(i,j,xyVal-1);
+                }
+                //vals = "x: " + clto_str(i) + ", y: " + clto_str(j) + " = " + clto_str(int(xyVal)) + "\n";
+                vals += clto_str(int(xyVal)) + " ";
+                
+            }
+            cout << vals << endl;
+            //this->beakerNode_->nodelog(vals);
+            // cellCount++;
+        }
+        this->beakerNode_->beakerCanvas_->drawGrid();
         this->beakerNode_->refresh();
     }
 
