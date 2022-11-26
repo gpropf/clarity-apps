@@ -58,16 +58,6 @@ class BeakerNode : public HybridNode<B> {
         // changes state.
         this->cppVal_->beakerNode_ = this;
 
-        val JSProxyNode = val::global("JSProxyNode");
-        val doNothing = JSProxyNode["doNothing"];
-        val Module = val::global("Module");
-        val Beaker = Module["Beaker"];
-
-        // val elgMakeNewReactionRuleButtonClicked =
-        //     val::global("elgMakeNewReactionRuleButtonClicked");
-
-        val makeEl = val::global("makeEl");
-
         val makeNewReactionRule_el =
             val::global("elgMakeNewReactionRuleButtonClicked")(this->cppVal_);
 
@@ -102,10 +92,8 @@ class BeakerNode : public HybridNode<B> {
                 .withAttributes({{"style", val("border: 3px solid ##77bbee")}, {"size", val(2)}})
                 .textInput();
 
+        // Only the main grid needs these controls
         if (!this->cppVal_->isReactionRule_) {
-            // canvas1CurrentCellColor_tinp->addEventListener(val::global("colorChange_el"),
-            // "change");
-
             HybridNode<string> *cmdarea;
             CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(this));
             textBuilder.br();
@@ -169,12 +157,6 @@ class BeakerNode : public HybridNode<B> {
 
             reactionRulesDiv_ = intBuilder.withTag("div").withName("reactionRulesDiv").build();
 
-            // CLNodeFactory<BeakerNode, ::Beaker<unsigned char>, int> reactionRulesBuilder(
-            //     intBuilder.withChildrenOf(reactionRulesDiv_));
-
-            // for (auto *rr : this->cppVal_->reactionRules_) {
-            // }
-
             textBuilder.br();
         }
     }
@@ -185,9 +167,10 @@ class BeakerNode : public HybridNode<B> {
     }
 
    public:
-    ClarityNode *reactionRulesDiv_;  // FIXME: Would be nice to keep this protected or private but
-                                     // this is an easy way to let Beaker see it for now.
+    // FIXME: Would be nice to keep these members protected or private but
+    // this is an easy way to let Beaker see it for now.
 
+    ClarityNode *reactionRulesDiv_;
     ClarityNode *beakerName_tinp;
     CanvasGrid<unsigned char> *beakerCanvas_;
 };
