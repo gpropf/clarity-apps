@@ -297,9 +297,11 @@ class Beaker {
 
     vector<Beaker *> reactionRules_;
 
-    Beaker *successor_;         //!< The pattern we replace this one with.
-    int successorOffsetX_ = 0;  //!< X offset of replacement pattern.
-    int successorOffsetY_ = 0;  //!< Y offset of replacement pattern.
+    Beaker *successor_;           //!< The pattern we replace this one with.
+    int successorOffsetX_ = 0;    //!< X offset of replacement pattern.
+    int successorOffsetY_ = 0;    //!< Y offset of replacement pattern.
+    int successionPriority_ = 1;  //!< Priority assigned to pixels replaced by application of this
+                                  //!< pattern. Lower values take precedence.
 
     int ruleCount_ = 0;
     // template <typename U>
