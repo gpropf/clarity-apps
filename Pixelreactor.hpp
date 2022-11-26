@@ -238,27 +238,29 @@ class Beaker {
             reactionRule->beakerNode_->beakerCanvas_->setCurrentCellVal(newColorIndex);
         }
     }
-
+    /**
+     * @brief Apply replacement rules to main grid one time.
+     *
+     */
     void iterate() {
         this->beakerNode_->nodelog("ITERATING...");
         this->iterationCount_++;
-        
 
-        for (int j = 0; j < gridHeight_ ; j++) {
+        for (int j = 0; j < gridHeight_; j++) {
             string vals = "";
             for (int i = 0; i < gridWidth_; i++) {
-                V xyVal = this->beakerNode_->beakerCanvas_->getValXY(i,j);
+                V xyVal = this->beakerNode_->beakerCanvas_->getValXY(i, j);
 
                 if (xyVal != 0) {
-                    this->beakerNode_->beakerCanvas_->setValXYNoDraw(i,j,xyVal-1);
+                    this->beakerNode_->beakerCanvas_->setValXYNoDraw(i, j, xyVal - 1);
                 }
-                //vals = "x: " + clto_str(i) + ", y: " + clto_str(j) + " = " + clto_str(int(xyVal)) + "\n";
+                // vals = "x: " + clto_str(i) + ", y: " + clto_str(j) + " = " + clto_str(int(xyVal))
+                // + "\n";
                 vals += clto_str(int(xyVal)) + " ";
-                
             }
             cout << vals << endl;
-            //this->beakerNode_->nodelog(vals);
-            // cellCount++;
+            // this->beakerNode_->nodelog(vals);
+            //  cellCount++;
         }
         this->beakerNode_->beakerCanvas_->drawGrid();
         this->beakerNode_->refresh();
