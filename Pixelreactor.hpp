@@ -160,10 +160,12 @@ class BeakerNode : public HybridNode<B> {
 
             textBuilder.br();
 
-            auto *iterationCounter = intBuilder.withAttributes({{"class", val("small_width")}})
-                                         .withCppVal(&this->cppVal_->iterationCount_)
-                                         .withName("iterationCounter")
-                                         .textInput();
+            auto *iterationCounter =
+                intBuilder
+                    .withAttributes({{"class", val("small_width")}, {"disabled", val("disabled")}})
+                    .withCppVal(&this->cppVal_->iterationCount_)
+                    .withName("iterationCounter")
+                    .textInput();
 
             reactionRulesDiv_ = intBuilder.withTag("div").withName("reactionRulesDiv").build();
 
@@ -294,6 +296,10 @@ class Beaker {
                                          //!< can be called when this updates.
 
     vector<Beaker *> reactionRules_;
+
+    Beaker *successor_;         //!< The pattern we replace this one with.
+    int successorOffsetX_ = 0;  //!< X offset of replacement pattern.
+    int successorOffsetY_ = 0;  //!< Y offset of replacement pattern.
 
     int ruleCount_ = 0;
     // template <typename U>
