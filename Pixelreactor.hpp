@@ -319,7 +319,13 @@ struct PixelReactor : public PageContent {
 
     ClarityNode *content(ClarityNode *innerContent = nullptr) {
         CLNodeFactory<HybridNode, double, double> builder("div", "maindiv");
-        auto *maindiv = builder.build();
+        
+        #ifdef USETF
+            auto *maindiv = builder.build();
+        #else
+            auto *maindiv = builder.withAttachmentId("hookid")
+                            .withAttachmentMode(clarity::ClarityNode::AttachmentMode::REPLACE_ID).build();
+        #endif
 
         CLNodeFactory<BeakerNode, Beaker<unsigned char>, int> beakerBuilder(
             builder.withChildrenOf(maindiv));

@@ -11,7 +11,11 @@
 
 int main() {
     PixelReactor pixelreactor;
-    TestFramework testFramework;
-    testFramework.content(pixelreactor.content());
+    #ifdef USETF
+        TestFramework testFramework;
+        testFramework.content(pixelreactor.content());
+    #else
+        pixelreactor.content();
+    #endif
     return 0;
 }

@@ -16,7 +16,7 @@ FRAMEWORK_DEPS = JSProxyNode.js Util.js pixelreactor.html Makefile
 # 	$(ENV) $(CC) $< -o $@ -c $(CFLAGS)
 
 %.o : %.cpp
-	$(ENV) $(CC) $< -o $@ -c $(CFLAGS)
+	$(ENV) $(CC) $< -o $@ -c $(CFLAGS) # -D USETF
 
 # Pixelreactor.o: Pixelreactor.hpp
 # 	$(ENV) $(CC) pixelreactor.hpp -c $(CFLAGS)
