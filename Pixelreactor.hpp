@@ -94,8 +94,9 @@ class BeakerNode : public HybridNode<B> {
 
         // Only the main grid needs these controls
         if (!this->cppVal_->isReactionRule_) {
-            val beakerIterate = val::global("beakerIterate")(this->cppVal_);
-            val::global().call<void>("setInterval", beakerIterate, 500);
+            // Uncomment these two lines to re-activate beaker auto-iteration.
+            // val beakerIterate = val::global("beakerIterate")(this->cppVal_);
+            // val::global().call<void>("setInterval", beakerIterate, 500);
 
             HybridNode<string> *cmdarea;
             CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(this));
