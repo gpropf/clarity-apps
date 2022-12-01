@@ -98,6 +98,11 @@ class BeakerNode : public HybridNode<B> {
             // val beakerIterate = val::global("beakerIterate")(this->cppVal_);
             // val::global().call<void>("setInterval", beakerIterate, 500);
 
+            //val beakerIterate = val::global("callMethodByName")(this->cppVal_, val("iterate"));
+            val beakerIterate = val::global("Util")["callMethodByName"](this->cppVal_, val("iterate"));
+
+            //val::global().call<void>("setInterval", beakerIterate, 500);
+
             HybridNode<string> *cmdarea;
             CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(this));
             textBuilder.br();
@@ -144,8 +149,9 @@ class BeakerNode : public HybridNode<B> {
 
             textBuilder.br();
 
+            val beakerIterate_el = val::global("Util")["callMethodByName"](this->cppVal_, val("iterate"), val(true));
             auto *iterate_btn =
-                intBuilder.button("iterate_btn", "Iterate the reaction", iterate_el);
+                intBuilder.button("iterate_btn", "Iterate the reaction", beakerIterate_el);
 
             auto *newReactionRule_btn = intBuilder.button(
                 "newReactionRule_btn", "Make reaction rule", makeNewReactionRule_el);
@@ -257,7 +263,7 @@ class Beaker {
             //  cellCount++;
         }
         // this->beakerNode_->beakerCanvas_->drawGrid();
-        //this->beakerNode_->beakerCanvas_->drawGrid();
+        // this->beakerNode_->beakerCanvas_->drawGrid();
         this->beakerNode_->refresh();
     }
 
