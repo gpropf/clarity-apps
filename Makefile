@@ -28,11 +28,11 @@ PIXELREACTOR_OBJS = pixelreactor.o clarity/ClarityNode.o clarity/CanvasElement.o
 pixelreactor-prod: CFLAGS = -O1 -std=c++17 -I./clarity
 pixelreactor-prod: ENV =
 pixelreactor-prod: $(PIXELREACTOR_OBJS)	
-	$(ENV) $(CC) -lembind --pre-js jsaux/clapps-aux.js $(PIXELREACTOR_OBJS) $(CFLAGS) -o $(JSOUT)
+	$(ENV) $(CC) $(CFLAGS) -lembind --pre-js jsaux/clapps-aux.js $(PIXELREACTOR_OBJS)  -o $(JSOUT)
 
 
 pixelreactor: $(PIXELREACTOR_OBJS)	
-	$(ENV) $(CC) -lembind --pre-js jsaux/clapps-aux.js $(PIXELREACTOR_OBJS) $(CFLAGS) -o $(JSOUT)
+	$(ENV) $(CC)  $(CFLAGS) -lembind --pre-js jsaux/clapps-aux.js $(PIXELREACTOR_OBJS) -o $(JSOUT)
 
 CLDemo.o: CLDemo.hpp
 	$(ENV) $(CC) CLDemo.hpp -c $(CFLAGS)

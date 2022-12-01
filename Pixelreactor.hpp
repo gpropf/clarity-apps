@@ -94,6 +94,9 @@ class BeakerNode : public HybridNode<B> {
 
         // Only the main grid needs these controls
         if (!this->cppVal_->isReactionRule_) {
+            val beakerIterate = val::global("beakerIterate")(this->cppVal_);
+            val::global().call<void>("setInterval", beakerIterate, 500);
+
             HybridNode<string> *cmdarea;
             CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(this));
             textBuilder.br();
@@ -253,6 +256,7 @@ class Beaker {
             //  cellCount++;
         }
         // this->beakerNode_->beakerCanvas_->drawGrid();
+        //this->beakerNode_->beakerCanvas_->drawGrid();
         this->beakerNode_->refresh();
     }
 
@@ -319,13 +323,14 @@ struct PixelReactor : public PageContent {
 
     ClarityNode *content(ClarityNode *innerContent = nullptr) {
         CLNodeFactory<HybridNode, double, double> builder("div", "maindiv");
-        
-        #ifdef USETF
-            auto *maindiv = builder.build();
-        #else
-            auto *maindiv = builder.withAttachmentId("hookid")
-                            .withAttachmentMode(clarity::ClarityNode::AttachmentMode::REPLACE_ID).build();
-        #endif
+
+#ifdef USETF
+        auto *maindiv = builder.build();
+#else
+        auto *maindiv = builder.withAttachmentId("hookid")
+                            .withAttachmentMode(clarity::ClarityNode::AttachmentMode::REPLACE_ID)
+                            .build();
+#endif
 
         CLNodeFactory<BeakerNode, Beaker<unsigned char>, int> beakerBuilder(
             builder.withChildrenOf(maindiv));

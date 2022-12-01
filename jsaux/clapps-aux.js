@@ -16,17 +16,24 @@ function makeEl(obj, method) {
     }
 }
 
+function beakerIterate(beaker) {
+    return function () {
+        console.log("Iterating beaker...");
+        beaker.iterate();
+    }
+}
+
 function elgBeakerIterate(beaker) {
-    return function (e) {        
+    return function (e) {
         console.log(beaker)
-        beaker.iterate();       
+        beaker.iterate();
     }
 }
 
 function elgMakeNewReactionRuleButtonClicked(beaker) {
-    return function (e) {        
+    return function (e) {
         console.log(beaker)
-        beaker.makeNewReactionRule();        
+        beaker.makeNewReactionRule();
     }
 }
 
