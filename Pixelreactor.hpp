@@ -51,6 +51,9 @@ class BeakerNode : public HybridNode<B> {
      */
     virtual void finalize() {
         this->nodelog("BeakerNode::finalize(): ");
+        val ghostUrl = val::global("ghostUrl");
+         
+        this->nodelog("Ghost Url: " + ghostUrl.as<string>());
 
         this->jsProxyNode_.set("clarityNode", this);
 
