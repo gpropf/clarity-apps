@@ -23,16 +23,21 @@ FRAMEWORK_DEPS = JSProxyNode.js Util.js pixelreactor.html Makefile
 
 # cd clarity; make ClarityNode.o CanvasElement.o Selectables.o clarity.o
 
-PIXELREACTOR_OBJS = pixelreactor.o clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectables.o clarity/clarity.o
+CLARITY_OBJS = clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectables.o clarity/clarity.o
+
+PIXELREACTOR_OBJS = pixelreactor.o $(CLARITY_OBJS)
+MATCHSTICKS_OBJS = matchsticks.o $(CLARITY_OBJS)
 
 pixelreactor-prod: CFLAGS = -O1 -std=c++17 -I./clarity
 pixelreactor-prod: ENV =
 pixelreactor-prod: $(PIXELREACTOR_OBJS)	
 	$(ENV) $(CC) $(CFLAGS) -lembind --pre-js jsaux/clapps-aux.js $(PIXELREACTOR_OBJS)  -o $(JSOUT)
 
-
 pixelreactor: $(PIXELREACTOR_OBJS)	
 	$(ENV) $(CC)  $(CFLAGS) -lembind --pre-js jsaux/clapps-aux.js $(PIXELREACTOR_OBJS) -o $(JSOUT)
+
+matchsticks: $(MATCHSTICKS_OBJS)	
+	$(ENV) $(CC)  $(CFLAGS) -lembind --pre-js jsaux/clapps-aux.js $(MATCHSTICKS_OBJS) -o $(JSOUT)
 
 CLDemo.o: CLDemo.hpp
 	$(ENV) $(CC) CLDemo.hpp -c $(CFLAGS)
