@@ -74,17 +74,17 @@ class StickWorldNode : public HybridNode<B> {
         // CLNodeFactory<HybridNode, unsigned char, double> canvasBuilder(
         //     builder.withChildrenOf(this));
 
-        beakerName_tinp = stringBuilder.withName("beakerName")
-                              //.withCppVal(&this->cppVal_->name_)
-                              .withAttributes({{"class", val("medium_width")}})
-                              .textInput();      
+        stickworldName_tinp = stringBuilder
+                                  .withName("stickworldName")
+                                  //.withCppVal(&this->cppVal_->name_)
+                                  .withAttributes({{"class", val("medium_width")}})
+                                  .textInput();
 
-        auto *swCanvas_ = intBuilder
-                              .withName("canvas1")
+        auto *swCanvas_ = intBuilder.withName("canvas1")
                               .withTag("canvas")
                               .withAttributes({{"style", val("border: 1px solid green")},
-                                               {"width", val(this->cppVal_->gridPixelWidth_)},
-                                               {"height", val(this->cppVal_->gridPixelHeight_)}})
+                                               {"width", val(this->cppVal_->swCanvasWidth_)},
+                                               {"height", val(this->cppVal_->swCanvasHeight_)}})
                               .canvas("canvasTestPattern");
 
         // swCanvas_->setCurrentCellVal(2);
@@ -95,17 +95,17 @@ class StickWorldNode : public HybridNode<B> {
         //         .withAttributes({{"style", val("border: 3px solid ##77bbee")}, {"size", val(2)}})
         //         .textInput();
 
-        // Only the main grid needs these controls
+        // Only the main canvas needs these controls
         // if (!this->cppVal_->isReactionRule_) {
-        //     // Uncomment these two lines to re-activate beaker auto-iteration.
-        //     // val beakerIterate = val::global("beakerIterate")(this->cppVal_);
-        //     // val::global().call<void>("setInterval", beakerIterate, 500);
+        //     // Uncomment these two lines to re-activate stickworld auto-iteration.
+        //     // val stickworldIterate = val::global("stickworldIterate")(this->cppVal_);
+        //     // val::global().call<void>("setInterval", stickworldIterate, 500);
 
-        //     //val beakerIterate = val::global("callMethodByName")(this->cppVal_, val("iterate"));
-        //     val beakerIterate = val::global("Util")["callMethodByName"](this->cppVal_,
-        //     val("iterate"));
+        //     //val stickworldIterate = val::global("callMethodByName")(this->cppVal_,
+        //     val("iterate")); val stickworldIterate =
+        //     val::global("Util")["callMethodByName"](this->cppVal_, val("iterate"));
 
-        //     //val::global().call<void>("setInterval", beakerIterate, 500);
+        //     //val::global().call<void>("setInterval", stickworldIterate, 500);
 
         //     HybridNode<string> *cmdarea;
         //     CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(this));
@@ -117,21 +117,22 @@ class StickWorldNode : public HybridNode<B> {
         //     cmdarea = textBuilder.withName("cmdarea").textarea(cmdarea_text, 6, 60);
         //     textBuilder.br();
 
-        //     // auto *beakerGridWidth_tinp = intBuilder.withName("beakerGridWidth_tinp")
-        //     //                                  .withCppVal(&this->cppVal_->gridWidth_)
+        //     // auto *stickworldGridWidth_tinp = intBuilder.withName("stickworldGridWidth_tinp")
+        //     //                                  .withCppVal(&this->cppVal_->canvasWidth_)
         //     //                                  .withAttributes({{"class", val("small_width")}})
         //     //                                  .textInput();
 
-        //     // auto *beakerGridWidth_tinp_lbl =
-        //     //     intBuilder.label(beakerGridWidth_tinp, "StickWorld grid width.", true);
+        //     // auto *stickworldGridWidth_tinp_lbl =
+        //     //     intBuilder.label(stickworldGridWidth_tinp, "StickWorld canvas width.", true);
 
-        //     // auto *beakerGridHeight_tinp = intBuilder.withName("beakerGridHeight_tinp")
-        //     //                                   .withCppVal(&this->cppVal_->gridHeight_)
+        //     // auto *stickworldGridHeight_tinp = intBuilder.withName("stickworldGridHeight_tinp")
+        //     //                                   .withCppVal(&this->cppVal_->canvasHeight_)
         //     //                                   .withAttributes({{"class", val("small_width")}})
         //     //                                   .textInput();
 
-        //     // auto *beakerGridHeight_tinp_lbl =
-        //     //     intBuilder.label(beakerGridHeight_tinp, "StickWorld grid height.", true);
+        //     // auto *stickworldGridHeight_tinp_lbl =
+        //     //     intBuilder.label(stickworldGridHeight_tinp, "StickWorld canvas height.",
+        //     true);
 
         //     textBuilder.br();
 
@@ -153,9 +154,9 @@ class StickWorldNode : public HybridNode<B> {
 
         //     textBuilder.br();
 
-        //     val beakerIterate_el = val::global("Util")["callMethodByName"](this->cppVal_,
+        //     val stickworldIterate_el = val::global("Util")["callMethodByName"](this->cppVal_,
         //     val("iterate"), val(true)); auto *iterate_btn =
-        //         intBuilder.button("iterate_btn", "Iterate the reaction", beakerIterate_el);
+        //         intBuilder.button("iterate_btn", "Iterate the reaction", stickworldIterate_el);
 
         //     auto *newReactionRule_btn = intBuilder.button(
         //         "newReactionRule_btn", "Make reaction rule", makeNewReactionRule_el);
@@ -185,37 +186,30 @@ class StickWorldNode : public HybridNode<B> {
     // this is an easy way to let StickWorld see it for now.
 
     ClarityNode *reactionRulesDiv_;
-    ClarityNode *beakerName_tinp;
+    ClarityNode *stickworldName_tinp;
     // ClarityNode *swCanvas_;
 };
 
 /**
  * @brief Represents a single "reaction vessel" in which our experiments can take place. The
- * reaction rules that determine how patterns in the grid transform will use the same CanvasGrid
- * control the beaker itself does.
+ * reaction rules that determine how patterns in the canvas transform will use the same CanvasGrid
+ * control the stickworld itself does.
  *
- * @tparam V This is the type we are using for the grid elements. The original app I wrote in
+ * @tparam V This is the type we are using for the canvas elements. The original app I wrote in
  * ClojureScript used small positive integers for the colors so the expected type here is `unsigned
  * char`. Theoretically, it's possible to use other types though.
  */
 template <typename V>
 class StickWorld {
    public:
-    StickWorld(int gridPixelWidth, int gridPixelHeight)
-        : gridPixelWidth_(gridPixelWidth), gridPixelHeight_(gridPixelHeight) {}
-
-    
+    StickWorld(int swCanvasWidth, int swCanvasHeight)
+        : swCanvasWidth_(swCanvasWidth), swCanvasHeight_(swCanvasHeight) {}
 
    protected:
-    int gridPixelWidth_ = 600;   //!< Width in pixels of beaker grid.
-    int gridPixelHeight_ = 400;  //!< Height in pixels of beaker grid.
+    int swCanvasWidth_ = 600;   //!< Width in pixels of stickworld canvas.
+    int swCanvasHeight_ = 400;  //!< Height in pixels of stickworld canvas.
 
-    // int ruleGridWidth_ = 5;   //!< Width of new rule grid in cells.
-    // int ruleGridHeight_ = 3;  //!< Height of new rule grid in cells.
-
-    // V *gridArray;  //!< The actual grid data to be used by the CanvasGrid in StickWorldNode.
-    int iterationCount_ =
-        0;  //!< Counter that advances every time the rules are applied to the grid.
+    int iterationCount_ = 0;
     StickWorldNode<StickWorld<V>>
         *stickWorldNode_;  //!< Pointer back to containing SWN so that SWN->refresh()
                            //!< can be called when this updates.
@@ -249,8 +243,6 @@ EMSCRIPTEN_BINDINGS(Matchsticks) {
  *
  */
 struct Matchsticks : public PageContent {
-  
-
     ClarityNode *content(ClarityNode *innerContent = nullptr) {
         CLNodeFactory<HybridNode, double, double> builder("div", "maindiv");
 
@@ -264,16 +256,16 @@ struct Matchsticks : public PageContent {
 //        auto *maindiv = builder.build();
 #endif
 
-        CLNodeFactory<StickWorldNode, StickWorld<unsigned char>, int> beakerBuilder(
+        CLNodeFactory<StickWorldNode, StickWorld<unsigned char>, int> stickworldBuilder(
             builder.withChildrenOf(maindiv));
 
         StickWorld<unsigned char> *b = new StickWorld<unsigned char>(600, 400);
 
         StickWorldNode<StickWorld<unsigned char>> *bn =
-            beakerBuilder.withTag("div").withName("mainBeaker").withCppVal(b).build();
+            stickworldBuilder.withTag("div").withName("mainBeaker").withCppVal(b).build();
 
         //  StickWorldNode<StickWorld<unsigned char>> *bn =
-        //     beakerBuilder.withTag("div").withName("mainBeaker").build();
+        //     stickworldBuilder.withTag("div").withName("mainBeaker").build();
 
         cout << "Setup complete!" << endl;
         return maindiv;
