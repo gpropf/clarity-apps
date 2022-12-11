@@ -36,6 +36,7 @@ pixelreactor-prod: $(PIXELREACTOR_OBJS)
 pixelreactor: $(PIXELREACTOR_OBJS)	
 	$(ENV) $(CC)  $(CFLAGS) -lembind --pre-js jsaux/clapps-aux.js $(PIXELREACTOR_OBJS) -o $(JSOUT)
 
+#matchsticks: CFLAGS	= -O3 -std=c++17 -I./clarity 
 matchsticks: $(MATCHSTICKS_OBJS)	
 	$(ENV) $(CC)  $(CFLAGS) -lembind --pre-js jsaux/clapps-aux.js $(MATCHSTICKS_OBJS) -o $(JSOUT)
 
