@@ -9,9 +9,6 @@
 
 using namespace clarity;
 
-template <typename U>
-class StickWorld;
-
 /**
  * @brief This is the complex control that allows the user to edit and run the StickWorld. Probably
  * a good thing to copy if you're planning to make your own complex controls.
@@ -41,6 +38,8 @@ class StickWorldNode : public HybridNode<B> {
         // this->swCanvas_->refreshView();
     }
 
+    inline CanvasElement<int> *getSWCanvas() { return this->swCanvas_; }
+
     /**
      * @brief This overload of `finalize()` shows that in the case of complex data types with many
      * subcomponents the finalize method is reponsible for setting up the nodes responsible for
@@ -66,12 +65,23 @@ class StickWorldNode : public HybridNode<B> {
                                   .withAttributes({{"class", val("medium_width")}})
                                   .textInput();
 
-        auto *swCanvas_ = intBuilder.withName("canvas1")
-                              .withTag("canvas")
-                              .withAttributes({{"style", val("border: 1px solid green")},
-                                               {"width", val(this->cppVal_->swCanvasWidth_)},
-                                               {"height", val(this->cppVal_->swCanvasHeight_)}})
-                              .canvas("canvasTestPattern");
+        swCanvas_ = intBuilder.withName("canvas1")
+                        .withTag("canvas")
+                        .withAttributes({{"style", val("border: 1px solid green")},
+                                         {"width", val(this->cppVal_->swCanvasWidth_)},
+                                         {"height", val(this->cppVal_->swCanvasHeight_)}})
+                        .canvasElement();
+
+        // val canvasFillcolor = val::global("canvasFillcolor");
+        // val ctx = swCanvas_->getDomElement().call<val>("getContext", val("2d"));
+        val ctx = swCanvas_->getContext2d();
+        ctx.set("fillStyle", val("aqua"));
+        ctx.call<void>("fillRect", val(0), val(0), val(this->cppVal_->getSWCanvasWidth()),
+                       val(this->cppVal_->getSWCanvasHeight()));
+        // fillRect(0, 0, w, h);
+
+        val::global("setTicker")(this->cppVal_);
+        // swCanvas_->runDrawFunction();
     }
 
     // inline virtual void doNothing() {
@@ -84,6 +94,7 @@ class StickWorldNode : public HybridNode<B> {
     // this is an easy way to let StickWorld see it for now.
 
     ClarityNode *reactionRulesDiv_;
+    CanvasElement<int> *swCanvas_;
     ClarityNode *stickworldName_tinp;
     // ClarityNode *swCanvas_;
 };
@@ -97,7 +108,7 @@ struct ColorRGBA {
 
 struct Matchstick {
     coordinatePair fromPoint_, toPoint_;
-    ColorRGBA stickColor_; //, toCol_;
+    ColorRGBA stickColor_;  //, toCol_;
 
     Matchstick(coordinatePair fromPoint, coordinatePair toPoint, ColorRGBA stickColor)
         : fromPoint_(fromPoint), toPoint_(toPoint), stickColor_(stickColor) {}
@@ -112,13 +123,24 @@ struct Matchstick {
  * ClojureScript used small positive integers for the colors so the expected type here is `unsigned
  * char`. Theoretically, it's possible to use other types though.
  */
-template <typename V>
+
 class StickWorld {
    public:
-    
-
     StickWorld(int swCanvasWidth, int swCanvasHeight)
         : swCanvasWidth_(swCanvasWidth), swCanvasHeight_(swCanvasHeight) {}
+
+    inline int getSWCanvasWidth() { return this->swCanvasWidth_; }
+    inline int getSWCanvasHeight() { return this->swCanvasHeight_; }
+
+    inline void tick() {
+        cout << "TICK TOCK!" << endl;
+        CanvasElement<int> *swCanvas = stickWorldNode_->getSWCanvas();
+        val ctx = swCanvas->getContext2d();
+        ctx.set("fillStyle", val("maroon"));
+        // ctx.call<void>("fillRect", val(10), val(8), val(10 * iterationCount_),
+        //                val(8 * iterationCount_));
+        iterationCount_++;
+    }
 
    protected:
     int swCanvasWidth_ = 600;   //!< Width in pixels of stickWorld canvas.
@@ -126,31 +148,30 @@ class StickWorld {
 
     int iterationCount_ = 0;
 
-    StickWorldNode<StickWorld<V>>
+    StickWorldNode<StickWorld>
         *stickWorldNode_;  //!< Pointer back to containing SWN so that SWN->refresh()
                            //!< can be called when this updates.
 
-    friend class StickWorldNode<StickWorld<V>>;
+    friend class StickWorldNode<StickWorld>;
 };
 
 EMSCRIPTEN_BINDINGS(Matchsticks) {
-    // class_<HybridNode<StickWorld<unsigned char>>>("HybridNode_h")
-    //     .function("doNothing", &HybridNode<StickWorld<unsigned char>>::doNothing,
+    // class_<HybridNode<StickWorld>>("HybridNode_h")
+    //     .function("doNothing", &HybridNode<StickWorld>::doNothing,
     //     allow_raw_pointers());
 
-    class_<StickWorldNode<StickWorld<unsigned char>>>("StickWorldNode_h");
-    // .function("doNothing", &StickWorldNode<StickWorld<unsigned char>>::doNothing,
+    class_<StickWorldNode<StickWorld>>("StickWorldNode");
+    // .function("doNothing", &StickWorldNode<StickWorld>::doNothing,
     //           allow_raw_pointers());
 
-    class_<StickWorld<unsigned char>>("StickWorld_h");
+    class_<StickWorld>("StickWorld").function("tick", &StickWorld::tick, allow_raw_pointers());
 
     class_<CanvasElement<int>>("CanvasElement_i");
-    // .function("setColorReactionRules", &StickWorld<unsigned char>::setColorReactionRules,
-    //           allow_raw_pointers())
-    // .function("iterate", &StickWorld<unsigned char>::iterate, allow_raw_pointers())
-    // .function("makeNewReactionRule", &StickWorld<unsigned char>::makeNewReactionRule,
+    //    .function("runDrawFunction", &CanvasElement<int>::runDrawFunction, allow_raw_pointers());
+    // .function("iterate", &StickWorld::iterate, allow_raw_pointers())
+    // .function("makeNewReactionRule", &StickWorld::makeNewReactionRule,
     //           allow_raw_pointers());
-    // .class_function("makeNewReactionRule_st", &StickWorld<unsigned char>::makeNewReactionRule_st,
+    // .class_function("makeNewReactionRule_st", &StickWorld::makeNewReactionRule_st,
     //                 allow_raw_pointers());
 }
 
@@ -170,12 +191,12 @@ struct Matchsticks : public PageContent {
                             .build();
 #endif
 
-        CLNodeFactory<StickWorldNode, StickWorld<unsigned char>, int> stickworldBuilder(
+        CLNodeFactory<StickWorldNode, StickWorld, int> stickworldBuilder(
             builder.withChildrenOf(maindiv));
 
-        StickWorld<unsigned char> *stickWorld = new StickWorld<unsigned char>(600, 400);
+        StickWorld *stickWorld = new StickWorld(600, 400);
 
-        StickWorldNode<StickWorld<unsigned char>> *stickWorldNode =
+        StickWorldNode<StickWorld> *stickWorldNode =
             stickworldBuilder.withTag("div").withName("stickWorld").withCppVal(stickWorld).build();
 
         cout << "Setup complete!" << endl;

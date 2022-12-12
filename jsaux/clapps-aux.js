@@ -46,3 +46,8 @@ function colorChange_el(ev) {
     console.log("Event: " + ev);
     console.log("colorChange_el()");
 }
+
+function setTicker(stickWorld) {
+    setInterval(() => {stickWorld.tick()}, 500);
+}
+
