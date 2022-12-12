@@ -52,7 +52,7 @@ class BeakerNode : public HybridNode<B> {
     virtual void finalize() {
         this->nodelog("BeakerNode::finalize(): ");
         val ghostUrl = val::global("ghostUrl");
-         
+
         this->nodelog(clto_str("Ghost Url: ") + ghostUrl.as<string>());
 
         this->jsProxyNode_.set("clarityNode", this);
@@ -69,14 +69,25 @@ class BeakerNode : public HybridNode<B> {
         CLNodeFactory<HybridNode, string, int> builder("div", "testBeaker");
         CLNodeFactory<HybridNode, string, int> stringBuilder(builder.withChildrenOf(this));
         CLNodeFactory<HybridNode, int, int> intBuilder(builder.withChildrenOf(this));
+        CLNodeFactory<HybridNode, typename Beaker<B>::priorityT, typename Beaker<B>::priorityT>
+            priorityBuilder(builder.withChildrenOf(this));
 
         CLNodeFactory<HybridNode, unsigned char, double> canvasBuilder(
             builder.withChildrenOf(this));
 
-        beakerName_tinp = stringBuilder.withName("beakerName")
-                              .withCppVal(&this->cppVal_->name_)
-                              .withAttributes({{"class", val("medium_width")}})
-                              .textInput();
+        beakerName_tinp_ = stringBuilder.withName("beakerName")
+                               .withCppVal(&this->cppVal_->name_)
+                               .withAttributes({{"class", val("medium_width")}})
+                               .textInput();
+
+        stringBuilder.br();
+
+        priorityTIN_ = priorityBuilder.withName("priority")
+                           .withCppVal(&this->cppVal_->successionPriority_)
+                           .withAttributes({{"class", val("small_width")}})
+                           .textInput();
+
+        // successionPriority_
 
         beakerCanvas_ =
             canvasBuilder.withName("canvas1")
@@ -101,10 +112,11 @@ class BeakerNode : public HybridNode<B> {
             // val beakerIterate = val::global("beakerIterate")(this->cppVal_);
             // val::global().call<void>("setInterval", beakerIterate, 500);
 
-            //val beakerIterate = val::global("callMethodByName")(this->cppVal_, val("iterate"));
-            val beakerIterate = val::global("Util")["callMethodByName"](this->cppVal_, val("iterate"));
+            // val beakerIterate = val::global("callMethodByName")(this->cppVal_, val("iterate"));
+            val beakerIterate =
+                val::global("Util")["callMethodByName"](this->cppVal_, val("iterate"));
 
-            //val::global().call<void>("setInterval", beakerIterate, 500);
+            // val::global().call<void>("setInterval", beakerIterate, 500);
 
             HybridNode<string> *cmdarea;
             CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(this));
@@ -152,7 +164,8 @@ class BeakerNode : public HybridNode<B> {
 
             textBuilder.br();
 
-            val beakerIterate_el = val::global("Util")["callMethodByName"](this->cppVal_, val("iterate"), val(true));
+            val beakerIterate_el =
+                val::global("Util")["callMethodByName"](this->cppVal_, val("iterate"), val(true));
             auto *iterate_btn =
                 intBuilder.button("iterate_btn", "Iterate the reaction", beakerIterate_el);
 
@@ -184,7 +197,8 @@ class BeakerNode : public HybridNode<B> {
     // this is an easy way to let Beaker see it for now.
 
     ClarityNode *reactionRulesDiv_;
-    ClarityNode *beakerName_tinp;
+    ClarityNode *beakerName_tinp_;
+    ClarityNode *priorityTIN_;
     CanvasGrid<unsigned char> *beakerCanvas_;
 };
 
@@ -200,6 +214,12 @@ class BeakerNode : public HybridNode<B> {
 template <typename V>
 class Beaker {
    public:
+    typedef short int priorityT;
+    typedef pair<V, priorityT> valuePriorityPairT;
+    typedef unsigned short int gridCoordinateT;
+    typedef pair<gridCoordinateT, gridCoordinateT> gridCoordinatePairT;
+    // typedef
+
     Beaker(int gridWidth, int gridHeight, int gridPixelWidth, int gridPixelHeight,
            const string &name = "", bool isReactionRule = false)
         : gridWidth_(gridWidth),
@@ -287,6 +307,12 @@ class Beaker {
     int ruleGridHeight_ = 3;  //!< Height of new rule grid in cells.
 
     V *gridArray;  //!< The actual grid data to be used by the CanvasGrid in BeakerNode.
+
+    valuePriorityPairT
+        *successionGrid;  //!< Grid with same dimensions as main grid but allows us to store
+                          //!< "stacks" of value-priority pairs so that we can calculate correct
+                          //!< succession value for each point in the grid.
+
     int iterationCount_ =
         0;  //!< Counter that advances every time the rules are applied to the grid.
     BeakerNode<Beaker<V>> *beakerNode_;  //!< Pointer back to containing BN so that BN->refresh()
@@ -294,11 +320,11 @@ class Beaker {
 
     vector<Beaker *> reactionRules_;
 
-    Beaker *successor_;           //!< The pattern we replace this one with.
-    int successorOffsetX_ = 0;    //!< X offset of replacement pattern.
-    int successorOffsetY_ = 0;    //!< Y offset of replacement pattern.
-    int successionPriority_ = 1;  //!< Priority assigned to pixels replaced by application of this
-                                  //!< pattern. Lower values take precedence.
+    Beaker *successor_;                 //!< The pattern we replace this one with.
+    int successorOffsetX_ = 0;          //!< X offset of replacement pattern.
+    int successorOffsetY_ = 0;          //!< Y offset of replacement pattern.
+    priorityT successionPriority_ = 1;  //!< Priority assigned to pixels replaced by application of
+                                        //!< this pattern. Lower values take precedence.
 
     int ruleCount_ = 0;
     // template <typename U>
@@ -309,6 +335,10 @@ EMSCRIPTEN_BINDINGS(PixelReactor) {
     // class_<HybridNode<Beaker<unsigned char>>>("HybridNode_h")
     //     .function("doNothing", &HybridNode<Beaker<unsigned char>>::doNothing,
     //     allow_raw_pointers());
+    class_<HybridNode<Beaker<unsigned char>::priorityT>>("HybridNode_priorityT")
+        .function("updateNodeFromDom",
+                  &HybridNode<Beaker<unsigned char>::priorityT>::updateNodeFromDom,
+                  allow_raw_pointers());
 
     class_<BeakerNode<Beaker<unsigned char>>>("BeakerNode_h")
         .function("doNothing", &BeakerNode<Beaker<unsigned char>>::doNothing, allow_raw_pointers());
