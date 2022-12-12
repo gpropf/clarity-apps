@@ -54,7 +54,7 @@ class StickWorldNode : public HybridNode<B> {
         // val ghostUrl = val::global("ghostUrl");
         // this->nodelog(clto_str("Ghost Url: ") + ghostUrl.as<string>());
 
-        this->jsProxyNode_.set("clarityNode", this);        
+        this->jsProxyNode_.set("clarityNode", this);
 
         CLNodeFactory<HybridNode, string, int> builder("div", "stickworldDiv");
         CLNodeFactory<HybridNode, string, int> stringBuilder(builder.withChildrenOf(this));
@@ -72,7 +72,6 @@ class StickWorldNode : public HybridNode<B> {
                                                {"width", val(this->cppVal_->swCanvasWidth_)},
                                                {"height", val(this->cppVal_->swCanvasHeight_)}})
                               .canvas("canvasTestPattern");
-        
     }
 
     // inline virtual void doNothing() {
@@ -89,6 +88,21 @@ class StickWorldNode : public HybridNode<B> {
     // ClarityNode *swCanvas_;
 };
 
+typedef pair<double, double> coordinatePair;
+
+struct ColorRGBA {
+    unsigned char r, g, b, a;
+    ColorRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
+};
+
+struct Matchstick {
+    coordinatePair fromPoint_, toPoint_;
+    ColorRGBA stickColor_; //, toCol_;
+
+    Matchstick(coordinatePair fromPoint, coordinatePair toPoint, ColorRGBA stickColor)
+        : fromPoint_(fromPoint), toPoint_(toPoint), stickColor_(stickColor) {}
+};
+
 /**
  * @brief Represents a single "reaction vessel" in which our experiments can take place. The
  * reaction rules that determine how patterns in the canvas transform will use the same CanvasGrid
@@ -101,6 +115,8 @@ class StickWorldNode : public HybridNode<B> {
 template <typename V>
 class StickWorld {
    public:
+    
+
     StickWorld(int swCanvasWidth, int swCanvasHeight)
         : swCanvasWidth_(swCanvasWidth), swCanvasHeight_(swCanvasHeight) {}
 
@@ -109,6 +125,7 @@ class StickWorld {
     int swCanvasHeight_ = 400;  //!< Height in pixels of stickWorld canvas.
 
     int iterationCount_ = 0;
+
     StickWorldNode<StickWorld<V>>
         *stickWorldNode_;  //!< Pointer back to containing SWN so that SWN->refresh()
                            //!< can be called when this updates.
@@ -122,8 +139,8 @@ EMSCRIPTEN_BINDINGS(Matchsticks) {
     //     allow_raw_pointers());
 
     class_<StickWorldNode<StickWorld<unsigned char>>>("StickWorldNode_h");
-        // .function("doNothing", &StickWorldNode<StickWorld<unsigned char>>::doNothing,
-        //           allow_raw_pointers());
+    // .function("doNothing", &StickWorldNode<StickWorld<unsigned char>>::doNothing,
+    //           allow_raw_pointers());
 
     class_<StickWorld<unsigned char>>("StickWorld_h");
 
@@ -143,7 +160,6 @@ EMSCRIPTEN_BINDINGS(Matchsticks) {
  */
 struct Matchsticks : public PageContent {
     ClarityNode *content(ClarityNode *innerContent = nullptr) {
-
         CLNodeFactory<HybridNode, double, double> builder("div", "maindiv");
 
 #ifdef USETF
@@ -160,7 +176,7 @@ struct Matchsticks : public PageContent {
         StickWorld<unsigned char> *stickWorld = new StickWorld<unsigned char>(600, 400);
 
         StickWorldNode<StickWorld<unsigned char>> *stickWorldNode =
-            stickworldBuilder.withTag("div").withName("stickWorld").withCppVal(stickWorld).build();       
+            stickworldBuilder.withTag("div").withName("stickWorld").withCppVal(stickWorld).build();
 
         cout << "Setup complete!" << endl;
         return maindiv;
