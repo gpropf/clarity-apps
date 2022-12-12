@@ -38,6 +38,15 @@ class StickWorldNode : public HybridNode<B> {
         // this->swCanvas_->refreshView();
     }
 
+    inline void tick() {
+        cout << "SWNode TICK TOCK!" << endl;
+        this->cppVal_->iterationCount_++;
+        int i = this->cppVal_->iterationCount_;
+        val ctx = swCanvas_->getContext2d();
+        ctx.set("fillStyle", val("maroon"));
+        ctx.call<void>("fillRect", val(10), val(8), val(10 * i), val(8 * i));
+    }
+
     inline CanvasElement<int> *getSWCanvas() { return this->swCanvas_; }
 
     /**
@@ -58,6 +67,7 @@ class StickWorldNode : public HybridNode<B> {
         CLNodeFactory<HybridNode, string, int> builder("div", "stickworldDiv");
         CLNodeFactory<HybridNode, string, int> stringBuilder(builder.withChildrenOf(this));
         CLNodeFactory<HybridNode, int, int> intBuilder(builder.withChildrenOf(this));
+        CLNodeFactory<HybridNode, double, double> doubleBuilder(builder.withChildrenOf(this));
 
         stickworldName_tinp = stringBuilder
                                   .withName("stickworldName")
@@ -72,6 +82,12 @@ class StickWorldNode : public HybridNode<B> {
                                          {"height", val(this->cppVal_->swCanvasHeight_)}})
                         .canvasElement();
 
+        auto *lineLength_tinp = doubleBuilder.withName("lineLength_tinp")
+                                    .withLabelText("Line Length")
+                                    .withHoverText("Line Length")
+                                    .withCppVal(&this->cppVal_->lineLength_)
+                                    .textInput();
+
         // val canvasFillcolor = val::global("canvasFillcolor");
         // val ctx = swCanvas_->getDomElement().call<val>("getContext", val("2d"));
         val ctx = swCanvas_->getContext2d();
@@ -80,7 +96,7 @@ class StickWorldNode : public HybridNode<B> {
                        val(this->cppVal_->getSWCanvasHeight()));
         // fillRect(0, 0, w, h);
 
-        val::global("setTicker")(this->cppVal_);
+        val::global("setTickerSWNode")(*this);
         // swCanvas_->runDrawFunction();
     }
 
@@ -148,6 +164,8 @@ class StickWorld {
 
     int iterationCount_ = 0;
 
+    double lineLength_ = 50;
+
     StickWorldNode<StickWorld>
         *stickWorldNode_;  //!< Pointer back to containing SWN so that SWN->refresh()
                            //!< can be called when this updates.
@@ -160,7 +178,8 @@ EMSCRIPTEN_BINDINGS(Matchsticks) {
     //     .function("doNothing", &HybridNode<StickWorld>::doNothing,
     //     allow_raw_pointers());
 
-    class_<StickWorldNode<StickWorld>>("StickWorldNode");
+    class_<StickWorldNode<StickWorld>>("StickWorldNode")
+        .function("tick", &StickWorldNode<StickWorld>::tick, allow_raw_pointers());
     // .function("doNothing", &StickWorldNode<StickWorld>::doNothing,
     //           allow_raw_pointers());
 

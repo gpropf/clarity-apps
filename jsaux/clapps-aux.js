@@ -51,3 +51,8 @@ function setTicker(stickWorld) {
     setInterval(() => {stickWorld.tick()}, 500);
 }
 
+function setTickerSWNode(stickWorldNode) {
+    setInterval(() => {stickWorldNode.tick()}, 500);
+}
+
+
