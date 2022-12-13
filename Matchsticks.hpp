@@ -16,6 +16,10 @@ struct ColorRGBA {
     unsigned char r_, g_, b_, a_;
     ColorRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
         : r_(r), g_(g), b_(b), a_(a) {}
+    string toString() {
+        return "rgba(" + clto_str(int(r_)) + "," + clto_str(int(g_)) + "," +
+                          clto_str(int(b_)) + "," + clto_str(int(a_)) + ")";
+    }
 };
 
 struct Matchstick {
@@ -41,7 +45,7 @@ struct Matchstick {
         coordinate yto = cos(angle) * length + y;
         coordinatePair fromPoint = pair(x, y);
         coordinatePair toPoint = pair(xto, yto);
-        ColorRGBA blueGreen(50, 200, 220, 255);
+        ColorRGBA blueGreen(50, 200, 220, 1);
         if (rand() % 10 == 0)
             return Matchstick(fromPoint, toPoint, blueGreen, 4);
         else
@@ -49,15 +53,18 @@ struct Matchstick {
     }
 
     void draw(val ctx) {
+        ctx.call<void>("beginPath");
         ctx.call<void>("moveTo", val(fromPoint_.first), val(fromPoint_.second));
         ctx.call<void>("lineTo", val(toPoint_.first), val(toPoint_.second));
-        // ctx.call<void>("save");
-        string colorStr = "#ff0000";
-        if (rand() % 3 == 0) colorStr = "#00ffff";
+        // string colorStr = "rgba(" + clto_str(int(stickColor_.r_)) + "," +
+        //                   clto_str(int(stickColor_.g_)) + "," + clto_str(int(stickColor_.b_)) +
+        //                   "," + clto_str(int(stickColor_.a_)) + ")";
+        string colorStr = stickColor_.toString();
+        cout << "Color for line is " << colorStr << endl;
         ctx.set("strokeStyle", colorStr);
         ctx.set("lineWidth", lineWidth_);
+        ctx.set("lineCap", "round");
         ctx.call<void>("stroke");
-        // ctx.call<void>("restore");
     }
 };
 
@@ -98,14 +105,14 @@ class StickWorldNode : public HybridNode<B> {
         //  ctx.set("fillStyle", val("#ffaa33"));
         //  ctx.call<void>("fillRect", val(10), val(8), val(10 * i), val(8 * i));
         // const int xRange, const int yRange, const coordinate length, const ColorRGBA stickColor)
-        ColorRGBA halfGrey(100, 100, 100, 255);
+        ColorRGBA stickColor(230, 55, 100, 1);
         Matchstick m = Matchstick::makeRandomStick(this->cppVal_->swCanvasWidth_,
                                                    this->cppVal_->swCanvasHeight_,
-                                                   this->cppVal_->lineLength_, halfGrey);
+                                                   this->cppVal_->lineLength_, stickColor);
         val ctx = swCanvas_->getContext2d();
-        //ctx.call<void>("save");
+        // ctx.call<void>("save");
         m.draw(ctx);
-        //ctx.call<void>("restore");
+        // ctx.call<void>("restore");
     }
 
     inline CanvasElement<int> *getSWCanvas() { return this->swCanvas_; }
@@ -154,11 +161,12 @@ class StickWorldNode : public HybridNode<B> {
         // val canvasFillcolor = val::global("canvasFillcolor");
         // val ctx = swCanvas_->getDomElement().call<val>("getContext", val("2d"));
         val ctx = swCanvas_->getContext2d();
-        ctx.set("fillStyle", val("aqua"));
+        //ctx.call<void>("save");
+        ctx.set("fillStyle", val("#eeeeee"));
         ctx.call<void>("fillRect", val(0), val(0), val(this->cppVal_->getSWCanvasWidth()),
                        val(this->cppVal_->getSWCanvasHeight()));
         // fillRect(0, 0, w, h);
-
+        //ctx.call<void>("restore");
         val::global("setTickerSWNode")(*this);
         // swCanvas_->runDrawFunction();
     }
