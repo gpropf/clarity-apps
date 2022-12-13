@@ -9,6 +9,51 @@
 
 using namespace clarity;
 
+typedef pair<double, double> coordinatePair;
+typedef double coordinate;
+
+struct ColorRGBA {
+    unsigned char r_, g_, b_, a_;
+    ColorRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+        : r_(r), g_(g), b_(b), a_(a) {}
+};
+
+struct Matchstick {
+    coordinatePair fromPoint_, toPoint_;
+    ColorRGBA stickColor_;  //, toCol_;
+    double length_;
+    double angle_;
+    double lineWidth_;
+
+    Matchstick(coordinatePair fromPoint, coordinatePair toPoint, ColorRGBA stickColor,
+               double lineWidth)
+        : fromPoint_(fromPoint),
+          toPoint_(toPoint),
+          stickColor_(stickColor),
+          lineWidth_(lineWidth) {}
+
+    static Matchstick makeRandomStick(int xRange, int yRange, coordinate length,
+                                      ColorRGBA &stickColor) {
+        coordinate x = rand() % xRange;
+        coordinate y = rand() % yRange;
+        double angle = (rand() % 360) / (2 * M_PI);
+        coordinate xto = sin(angle) * length + x;
+        coordinate yto = cos(angle) * length + y;
+        coordinatePair fromPoint = pair(x, y);
+        coordinatePair toPoint = pair(xto, yto);
+        double lineWidth = (rand() % 6 + rand() % 6 + rand() % 6 + rand() % 6) / 15;
+        return Matchstick(fromPoint, toPoint, stickColor, lineWidth);
+    }
+
+    void draw(val ctx) {
+        ctx.call<void>("moveTo", val(fromPoint_.first), val(fromPoint_.second));
+        ctx.call<void>("lineTo", val(toPoint_.first), val(toPoint_.second));
+        ctx.set("strokeStyle", "#ff0000");
+        ctx.set("lineWidth", val(lineWidth_));
+        ctx.call<void>("stroke");
+    }
+};
+
 /**
  * @brief This is the complex control that allows the user to edit and run the StickWorld. Probably
  * a good thing to copy if you're planning to make your own complex controls.
@@ -42,9 +87,15 @@ class StickWorldNode : public HybridNode<B> {
         cout << "SWNode TICK TOCK!" << endl;
         this->cppVal_->iterationCount_++;
         int i = this->cppVal_->iterationCount_;
-        val ctx = swCanvas_->getContext2d();
-        ctx.set("fillStyle", val("maroon"));
-        ctx.call<void>("fillRect", val(10), val(8), val(10 * i), val(8 * i));
+        // val ctx = swCanvas_->getContext2d();
+        //  ctx.set("fillStyle", val("#ffaa33"));
+        //  ctx.call<void>("fillRect", val(10), val(8), val(10 * i), val(8 * i));
+        // const int xRange, const int yRange, const coordinate length, const ColorRGBA stickColor)
+        ColorRGBA halfGrey(100, 100, 100, 255);
+        Matchstick m = Matchstick::makeRandomStick(this->cppVal_->swCanvasWidth_,
+                                                   this->cppVal_->swCanvasHeight_,
+                                                   this->cppVal_->lineLength_, halfGrey);
+        m.draw(context2d_);
     }
 
     inline CanvasElement<int> *getSWCanvas() { return this->swCanvas_; }
@@ -82,6 +133,8 @@ class StickWorldNode : public HybridNode<B> {
                                          {"height", val(this->cppVal_->swCanvasHeight_)}})
                         .canvasElement();
 
+        context2d_ = swCanvas_->getContext2d();
+
         auto *lineLength_tinp = doubleBuilder.withName("lineLength_tinp")
                                     .withLabelText("Line Length")
                                     .withHoverText("Line Length")
@@ -112,22 +165,8 @@ class StickWorldNode : public HybridNode<B> {
     ClarityNode *reactionRulesDiv_;
     CanvasElement<int> *swCanvas_;
     ClarityNode *stickworldName_tinp;
+    val context2d_;
     // ClarityNode *swCanvas_;
-};
-
-typedef pair<double, double> coordinatePair;
-
-struct ColorRGBA {
-    unsigned char r, g, b, a;
-    ColorRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
-};
-
-struct Matchstick {
-    coordinatePair fromPoint_, toPoint_;
-    ColorRGBA stickColor_;  //, toCol_;
-
-    Matchstick(coordinatePair fromPoint, coordinatePair toPoint, ColorRGBA stickColor)
-        : fromPoint_(fromPoint), toPoint_(toPoint), stickColor_(stickColor) {}
 };
 
 /**
@@ -147,16 +186,6 @@ class StickWorld {
 
     inline int getSWCanvasWidth() { return this->swCanvasWidth_; }
     inline int getSWCanvasHeight() { return this->swCanvasHeight_; }
-
-    inline void tick() {
-        cout << "TICK TOCK!" << endl;
-        CanvasElement<int> *swCanvas = stickWorldNode_->getSWCanvas();
-        val ctx = swCanvas->getContext2d();
-        ctx.set("fillStyle", val("maroon"));
-        // ctx.call<void>("fillRect", val(10), val(8), val(10 * iterationCount_),
-        //                val(8 * iterationCount_));
-        iterationCount_++;
-    }
 
    protected:
     int swCanvasWidth_ = 600;   //!< Width in pixels of stickWorld canvas.
@@ -183,7 +212,7 @@ EMSCRIPTEN_BINDINGS(Matchsticks) {
     // .function("doNothing", &StickWorldNode<StickWorld>::doNothing,
     //           allow_raw_pointers());
 
-    class_<StickWorld>("StickWorld").function("tick", &StickWorld::tick, allow_raw_pointers());
+    class_<StickWorld>("StickWorld");  //.function("tick", &StickWorld::tick, allow_raw_pointers());
 
     class_<CanvasElement<int>>("CanvasElement_i");
     //    .function("runDrawFunction", &CanvasElement<int>::runDrawFunction, allow_raw_pointers());
