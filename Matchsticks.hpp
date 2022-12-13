@@ -23,10 +23,10 @@ struct Matchstick {
     ColorRGBA stickColor_;  //, toCol_;
     double length_;
     double angle_;
-    double lineWidth_;
+    int lineWidth_;
 
     Matchstick(coordinatePair fromPoint, coordinatePair toPoint, ColorRGBA stickColor,
-               double lineWidth)
+               int lineWidth)
         : fromPoint_(fromPoint),
           toPoint_(toPoint),
           stickColor_(stickColor),
@@ -41,16 +41,23 @@ struct Matchstick {
         coordinate yto = cos(angle) * length + y;
         coordinatePair fromPoint = pair(x, y);
         coordinatePair toPoint = pair(xto, yto);
-        double lineWidth = (rand() % 6 + rand() % 6 + rand() % 6 + rand() % 6) / 15;
-        return Matchstick(fromPoint, toPoint, stickColor, lineWidth);
+        ColorRGBA blueGreen(50, 200, 220, 255);
+        if (rand() % 10 == 0)
+            return Matchstick(fromPoint, toPoint, blueGreen, 4);
+        else
+            return Matchstick(fromPoint, toPoint, stickColor, 1);
     }
 
     void draw(val ctx) {
         ctx.call<void>("moveTo", val(fromPoint_.first), val(fromPoint_.second));
         ctx.call<void>("lineTo", val(toPoint_.first), val(toPoint_.second));
-        ctx.set("strokeStyle", "#ff0000");
-        ctx.set("lineWidth", val(lineWidth_));
+        // ctx.call<void>("save");
+        string colorStr = "#ff0000";
+        if (rand() % 3 == 0) colorStr = "#00ffff";
+        ctx.set("strokeStyle", colorStr);
+        ctx.set("lineWidth", lineWidth_);
         ctx.call<void>("stroke");
+        // ctx.call<void>("restore");
     }
 };
 
@@ -95,7 +102,10 @@ class StickWorldNode : public HybridNode<B> {
         Matchstick m = Matchstick::makeRandomStick(this->cppVal_->swCanvasWidth_,
                                                    this->cppVal_->swCanvasHeight_,
                                                    this->cppVal_->lineLength_, halfGrey);
-        m.draw(context2d_);
+        val ctx = swCanvas_->getContext2d();
+        //ctx.call<void>("save");
+        m.draw(ctx);
+        //ctx.call<void>("restore");
     }
 
     inline CanvasElement<int> *getSWCanvas() { return this->swCanvas_; }
