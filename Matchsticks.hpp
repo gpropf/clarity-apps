@@ -98,6 +98,7 @@ class StickWorldNode : public HybridNode<B> {
     }
 
     inline void tick() {
+        if (this->cppVal_->playMode == 0) return;
         cout << "SWNode TICK TOCK!" << endl;
         this->cppVal_->iterationCount_++;
         int i = this->cppVal_->iterationCount_;
@@ -168,6 +169,12 @@ class StickWorldNode : public HybridNode<B> {
         // fillRect(0, 0, w, h);
         //ctx.call<void>("restore");
         val::global("setTickerSWNode")(*this);
+
+        val playPauseClassMap = ClarityNode::JSProxyNode_["playPauseClassMap"];
+        NumWrapper<int> toggleWrapper(&this->cppVal_->playMode, 2);
+        auto *playPauseButton = stringBuilder.withName("playPauseButton")
+                                .withClass("small_width")
+                                .cycleButton<NumWrapper<int>>("Play", toggleWrapper, playPauseClassMap);
         // swCanvas_->runDrawFunction();
     }
 
@@ -210,6 +217,7 @@ class StickWorld {
     int swCanvasHeight_ = 400;  //!< Height in pixels of stickWorld canvas.
 
     int iterationCount_ = 0;
+    int playMode = 0;
 
     double lineLength_ = 50;
 
