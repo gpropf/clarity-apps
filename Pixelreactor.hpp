@@ -54,17 +54,10 @@ class BeakerNode : public HybridNode<B> {
         val ghostUrl = val::global("ghostUrl");
 
         this->nodelog(clto_str("Ghost Url: ") + ghostUrl.as<string>());
-
         this->jsProxyNode_.set("clarityNode", this);
-
         // This pointer allows the Beaker to see its BeakerNode and automatically update it when it
         // changes state.
         this->cppVal_->beakerNode_ = this;
-
-        val makeNewReactionRule_el =
-            val::global("elgMakeNewReactionRuleButtonClicked")(this->cppVal_);
-
-        val iterate_el = val::global("elgBeakerIterate")(this->cppVal_);
 
         CLNodeFactory<HybridNode, string, int> builder("div", "testBeaker");
         CLNodeFactory<HybridNode, string, int> stringBuilder(builder.withChildrenOf(this));
@@ -74,23 +67,6 @@ class BeakerNode : public HybridNode<B> {
 
         CLNodeFactory<HybridNode, unsigned char, double> canvasBuilder(
             builder.withChildrenOf(this));
-
-        beakerName_tinp_ = stringBuilder.withName("beakerName")
-                               .withCppVal(&this->cppVal_->name_)
-                               .withAttributes({{"class", val("medium_width")}})
-                               .textInput();
-
-        stringBuilder.br();
-
-        priorityTIN_ = priorityBuilder.withName("priority")
-                           .withCppVal(&this->cppVal_->successionPriority_)
-                           .withAttributes({{"class", val("small_width")}})
-                           .textInput();
-
-        stringBuilder.withHoverText("Rule priority; lower numbers are higher priority")
-            .labelGivenNode(priorityTIN_, "Rule priority");
-
-        // successionPriority_
 
         beakerCanvas_ =
             canvasBuilder.withName("canvas1")
@@ -111,8 +87,26 @@ class BeakerNode : public HybridNode<B> {
 
         stringBuilder.labelGivenNode(canvas1CurrentCellColor_tinp, "Current Color Index");
 
-        // Only the main grid needs these controls
-        if (!this->cppVal_->isReactionRule_) {
+        if (this->cppVal_->isReactionRule_) {
+            beakerName_tinp_ = stringBuilder.withName("beakerName")
+                                   .withCppVal(&this->cppVal_->name_)
+                                   .withAttributes({{"class", val("medium_width")}})
+                                   .textInput();
+
+            stringBuilder.br();
+
+            priorityTIN_ = priorityBuilder.withName("priority")
+                               .withCppVal(&this->cppVal_->successionPriority_)
+                               .withAttributes({{"class", val("small_width")}})
+                               .textInput();
+
+            stringBuilder.withHoverText("Rule priority; lower numbers are higher priority")
+                .labelGivenNode(priorityTIN_, "Rule priority");
+        } else {
+            val makeNewReactionRule_el =
+                val::global("elgMakeNewReactionRuleButtonClicked")(this->cppVal_);
+
+            val iterate_el = val::global("elgBeakerIterate")(this->cppVal_);
             // Uncomment these two lines to re-activate beaker auto-iteration.
             // val beakerIterate = val::global("beakerIterate")(this->cppVal_);
             // val::global().call<void>("setInterval", beakerIterate, 500);
@@ -190,6 +184,12 @@ class BeakerNode : public HybridNode<B> {
 
             textBuilder.br();
         }
+
+        // successionPriority_
+
+        // Only the main grid needs these controls
+        if (!this->cppVal_->isReactionRule_) {
+                }
     }
 
     inline virtual void doNothing() {
