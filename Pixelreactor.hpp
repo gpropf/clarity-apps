@@ -158,8 +158,9 @@ class BeakerNode : public HybridNode<B> {
             auto *cmdarea_lbl = textBuilder.label(cmdarea, "CMD:", false);
             textBuilder.br();
 
-            cmdarea = textBuilder.withDisable()
-               //.withMergeAttributes({{"disabled", val("disabled")}})
+            cmdarea = textBuilder
+                          .withDisable()
+                          //.withMergeAttributes({{"disabled", val("disabled")}})
                           .withName("cmdarea")
                           .textarea(cmdarea_text, 6, 60);
             textBuilder.br();
@@ -204,6 +205,11 @@ class BeakerNode : public HybridNode<B> {
                 val::global("Util")["callMethodByName"](this->cppVal_, val("iterate"), val(true));
             auto *iterate_btn =
                 intBuilder.button("iterate_btn", "Iterate the reaction", beakerIterate_el);
+
+            val makePixelList_el = val::global("Util")["callMethodByName"](
+                this->cppVal_, val("makePixelList"), val(true));
+            auto *makePixelList_btn =
+                intBuilder.button("makePixelList_btn", "Make pixel list", makePixelList_el);
 
             auto *newReactionRule_btn = intBuilder.button(
                 "newReactionRule_btn", "Make reaction rule", makeNewReactionRule_el);
@@ -260,7 +266,7 @@ class Beaker {
     typedef pair<V, priorityT> valuePriorityPairT;
     typedef unsigned short int gridCoordinateT;
     typedef pair<gridCoordinateT, gridCoordinateT> gridCoordinatePairT;
-    typedef pair<gridCoordinatePairT, priorityT> gridCoordinatesPriorityTripletT;
+    typedef pair<gridCoordinatePairT, V> gridCoordinatesValueTripletT;
     // typedef
 
     Beaker(int gridWidth, int gridHeight, int gridPixelWidth, int gridPixelHeight,
@@ -290,6 +296,21 @@ class Beaker {
                                         .withCppVal(reactionRule)
                                         .build();
         beakerNode_->refresh();
+    }
+
+    vector<gridCoordinatesValueTripletT> makePixelList() {
+        vector<gridCoordinatesValueTripletT> pixels;
+        for (gridCoordinateT i = 0; i < this->gridWidth_; i++) {
+            for (gridCoordinateT j = 0; j < this->gridHeight_; j++) {
+                V pixelVal = this->beakerNode_->beakerCanvas_->getValXY(i, j);
+                if (pixelVal != 0) {
+                    gridCoordinatePairT xy = pair(i, j);
+                    gridCoordinatesValueTripletT xyv = pair(xy, pixelVal);
+                    pixels.push_back(xyv);
+                }
+            }
+        }
+        return pixels;
     }
 
     /**
@@ -390,8 +411,10 @@ EMSCRIPTEN_BINDINGS(PixelReactor) {
         // .function("setColorReactionRules", &Beaker<unsigned char>::setColorReactionRules,
         //           allow_raw_pointers())
         .function("iterate", &Beaker<unsigned char>::iterate, allow_raw_pointers())
+        .function("makePixelList", &Beaker<unsigned char>::makePixelList, allow_raw_pointers())
         .function("makeNewReactionRule", &Beaker<unsigned char>::makeNewReactionRule,
                   allow_raw_pointers());
+    register_vector<Beaker<unsigned char>::gridCoordinatesValueTripletT>("vector<gridCoordinatesValueTripletT>");
     // .class_function("makeNewReactionRule_st", &Beaker<unsigned char>::makeNewReactionRule_st,
     //                 allow_raw_pointers());
 }
