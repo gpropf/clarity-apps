@@ -310,6 +310,9 @@ class Beaker {
                 }
             }
         }
+        for (auto rule: reactionRules_) {
+            rule->makePixelList();
+        }
         return pixels;
     }
 
