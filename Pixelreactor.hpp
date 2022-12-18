@@ -87,6 +87,9 @@ class BeakerNode : public HybridNode<B> {
                            .withAttributes({{"class", val("small_width")}})
                            .textInput();
 
+        stringBuilder.withHoverText("Rule priority; lower numbers are higher priority")
+            .labelGivenNode(priorityTIN_, "Rule priority");
+
         // successionPriority_
 
         beakerCanvas_ =
@@ -105,6 +108,8 @@ class BeakerNode : public HybridNode<B> {
                 .withCppVal(beakerCanvas_->getPtr2CurrentCellVal())
                 .withAttributes({{"style", val("border: 3px solid ##77bbee")}, {"size", val(2)}})
                 .textInput();
+
+        stringBuilder.labelGivenNode(canvas1CurrentCellColor_tinp, "Current Color Index");
 
         // Only the main grid needs these controls
         if (!this->cppVal_->isReactionRule_) {
@@ -256,11 +261,11 @@ class Beaker {
      * @param newColorIndex
      * @return INLINE
      */
-    INLINE void setColorReactionRules(V newColorIndex) {
-        for (auto *reactionRule : this->reactionRules_) {
-            reactionRule->beakerNode_->beakerCanvas_->setCurrentCellVal(newColorIndex);
-        }
-    }
+    // INLINE void setColorReactionRules(V newColorIndex) {
+    //     for (auto *reactionRule : this->reactionRules_) {
+    //         reactionRule->beakerNode_->beakerCanvas_->setCurrentCellVal(newColorIndex);
+    //     }
+    // }
     /**
      * @brief Apply replacement rules to main grid one time.
      *
@@ -344,8 +349,8 @@ EMSCRIPTEN_BINDINGS(PixelReactor) {
         .function("doNothing", &BeakerNode<Beaker<unsigned char>>::doNothing, allow_raw_pointers());
 
     class_<Beaker<unsigned char>>("Beaker")
-        .function("setColorReactionRules", &Beaker<unsigned char>::setColorReactionRules,
-                  allow_raw_pointers())
+        // .function("setColorReactionRules", &Beaker<unsigned char>::setColorReactionRules,
+        //           allow_raw_pointers())
         .function("iterate", &Beaker<unsigned char>::iterate, allow_raw_pointers())
         .function("makeNewReactionRule", &Beaker<unsigned char>::makeNewReactionRule,
                   allow_raw_pointers());
