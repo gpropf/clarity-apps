@@ -158,7 +158,8 @@ class BeakerNode : public HybridNode<B> {
             auto *cmdarea_lbl = textBuilder.label(cmdarea, "CMD:", false);
             textBuilder.br();
 
-            cmdarea = textBuilder   //.withAttributes({{"disabled", val("disabled")}})
+            cmdarea = textBuilder.withDisable()
+               //.withMergeAttributes({{"disabled", val("disabled")}})
                           .withName("cmdarea")
                           .textarea(cmdarea_text, 6, 60);
             textBuilder.br();
