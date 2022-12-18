@@ -88,13 +88,6 @@ class BeakerNode : public HybridNode<B> {
         stringBuilder.labelGivenNode(canvas1CurrentCellColor_tinp, "Current Color Index");
 
         if (this->cppVal_->isReactionRule_) {
-            beakerName_tinp_ = stringBuilder.withName("beakerName")
-                                   .withCppVal(&this->cppVal_->name_)
-                                   .withAttributes({{"class", val("medium_width")}})
-                                   .textInput();
-
-            stringBuilder.br();
-
             priorityTIN_ = priorityBuilder.withName("priority")
                                .withCppVal(&this->cppVal_->successionPriority_)
                                .withAttributes({{"class", val("small_width")}})
@@ -102,6 +95,42 @@ class BeakerNode : public HybridNode<B> {
 
             stringBuilder.withHoverText("Rule priority; lower numbers are higher priority")
                 .labelGivenNode(priorityTIN_, "Rule priority");
+            beakerName_tinp_ = stringBuilder.withName("beakerName")
+                                   .withCppVal(&this->cppVal_->name_)
+                                   .withAttributes({{"class", val("medium_width")}})
+                                   .textInput();
+
+            // auto *successorOffset = stringBuilder
+            //                             .withName("successorOffset")
+            //                             //.withCppVal(&this->cppVal_->name_)
+            //                             .withAttributes({{"class", val("medium_width")}})
+            //                             .textInput();
+
+            // stringBuilder.withHoverText("Enter successor offset as x,y pair, e.g. 2,-1")
+            //     .labelGivenNode(successorOffset, "Successor Offset");
+
+            auto *xOffset_tinp = intBuilder.withName("xOffset")
+                                     .withClass("small_width")
+                                     .withCppVal(&this->cppVal_->successorOffsetX_)
+                                     .textInput();
+
+            stringBuilder.withHoverText("x offset")
+                .labelGivenNode(xOffset_tinp, "x offset of successor rule");
+
+            auto *yOffset_tinp = intBuilder.withName("yOffset")
+                                     .withClass("small_width")
+                                     .withCppVal(&this->cppVal_->successorOffsetY_)
+                                     .textInput();
+
+            stringBuilder.withHoverText("y offset")
+                .labelGivenNode(yOffset_tinp, "y offset of successor rule");
+
+            //.withLabelText("")
+
+            stringBuilder.withHoverText("Name of reaction rule")
+                .labelGivenNode(beakerName_tinp_, "Reaction Rule Name");
+            stringBuilder.br();
+
         } else {
             val makeNewReactionRule_el =
                 val::global("elgMakeNewReactionRuleButtonClicked")(this->cppVal_);
@@ -117,14 +146,21 @@ class BeakerNode : public HybridNode<B> {
 
             // val::global().call<void>("setInterval", beakerIterate, 500);
 
-            HybridNode<string> *cmdarea;
+            HybridNode<string>
+                *cmdarea;  // Declaring this before creating it so the label can be created first
+                           // and will thus be above the textarea. Obviously need an option for this
+                           // in the label() method.
             CLNodeFactory<HybridNode, string, double> textBuilder(builder.withChildrenOf(this));
             textBuilder.br();
-            string *cmdarea_text = new string("This is a textarea.");
+
+            string *cmdarea_text =
+                new string("You type commands here. This feature not currently available.");
             auto *cmdarea_lbl = textBuilder.label(cmdarea, "CMD:", false);
             textBuilder.br();
 
-            cmdarea = textBuilder.withName("cmdarea").textarea(cmdarea_text, 6, 60);
+            cmdarea = textBuilder   //.withAttributes({{"disabled", val("disabled")}})
+                          .withName("cmdarea")
+                          .textarea(cmdarea_text, 6, 60);
             textBuilder.br();
 
             auto *beakerGridWidth_tinp = intBuilder.withName("beakerGridWidth_tinp")
@@ -189,7 +225,7 @@ class BeakerNode : public HybridNode<B> {
 
         // Only the main grid needs these controls
         if (!this->cppVal_->isReactionRule_) {
-                }
+        }
     }
 
     inline virtual void doNothing() {
@@ -223,6 +259,7 @@ class Beaker {
     typedef pair<V, priorityT> valuePriorityPairT;
     typedef unsigned short int gridCoordinateT;
     typedef pair<gridCoordinateT, gridCoordinateT> gridCoordinatePairT;
+    typedef pair<gridCoordinatePairT, priorityT> gridCoordinatesPriorityTripletT;
     // typedef
 
     Beaker(int gridWidth, int gridHeight, int gridPixelWidth, int gridPixelHeight,
