@@ -324,7 +324,8 @@ class Beaker {
         auto [mx, my] = matchCoordiates;
         for (auto pixel : rulePixelList) {
             auto [pixelLocation, pixelVal] = pixel;
-            auto [px, py] = pixelLocation;
+            int px = pixelLocation.first;
+            int py = pixelLocation.second;
             px += mx;
             py += my;
             this->beakerNode_->beakerCanvas_->wrapCoordiates(px, py);
@@ -335,8 +336,8 @@ class Beaker {
     }
 
     bool matchesAt(Beaker<V> &rule, gridCoordinatePairT matchCoordiates) {
-        bool match = matchList(rule.newPixelList_);
-        match = match & matchList(rule.backgroundPixelList_);
+        bool match = matchList(rule.newPixelList_, matchCoordiates);
+        match = match && matchList(rule.backgroundPixelList_, matchCoordiates);
         return match;
     }
 
@@ -360,9 +361,15 @@ class Beaker {
         this->beakerNode_->nodelog("ITERATING...");
         this->iterationCount_++;
 
-        for (int j = 0; j < gridHeight_; j++) {
+        for (gridCoordinateT j = 0; j < gridHeight_; j++) {
             string vals = "";
-            for (int i = 0; i < gridWidth_; i++) {
+            for (gridCoordinateT i = 0; i < gridWidth_; i++) {
+
+                if (reactionRules_.size() > 0) {
+                    bool matches = matchesAt(*reactionRules_[0], pair(i,j));
+                    if (matches) beakerNode_->nodelog("Match at " + clto_str(i) + "," + clto_str(j));
+                }
+
                 V xyVal = this->beakerNode_->beakerCanvas_->getValXY(i, j);
 
                 if (xyVal != 0) {
