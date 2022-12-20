@@ -303,17 +303,41 @@ class Beaker {
         for (gridCoordinateT i = 0; i < this->gridWidth_; i++) {
             for (gridCoordinateT j = 0; j < this->gridHeight_; j++) {
                 V pixelVal = this->beakerNode_->beakerCanvas_->getValXY(i, j);
+                gridCoordinatePairT xy = pair(i, j);
+                gridCoordinatesValueTripletT xyv = pair(xy, pixelVal);
                 if (pixelVal != 0) {
-                    gridCoordinatePairT xy = pair(i, j);
-                    gridCoordinatesValueTripletT xyv = pair(xy, pixelVal);
                     pixels.push_back(xyv);
+                } else {
+                    this->backgroundPixelList_.push_back(xyv);
                 }
             }
         }
-        for (auto rule: reactionRules_) {
+        for (auto rule : reactionRules_) {
             rule->makePixelList();
         }
+        this->newPixelList_ = pixels;
         return pixels;
+    }
+
+    bool matchList(vector<gridCoordinatesValueTripletT> &rulePixelList,
+                   gridCoordinatePairT matchCoordiates) {
+        auto [mx, my] = matchCoordiates;
+        for (auto pixel : rulePixelList) {
+            auto [pixelLocation, pixelVal] = pixel;
+            auto [px, py] = pixelLocation;
+            px += mx;
+            py += my;
+            this->beakerNode_->beakerCanvas_->wrapCoordiates(px, py);
+            V mainGridVal = this->beakerNode_->beakerCanvas_->getValXY(px, py);
+            if (mainGridVal != pixelVal) return false;
+        }
+        return true;
+    }
+
+    bool matchesAt(Beaker<V> &rule, gridCoordinatePairT matchCoordiates) {
+        bool match = matchList(rule.newPixelList_);
+        match = match & matchList(rule.backgroundPixelList_);
+        return match;
     }
 
     /**
@@ -394,6 +418,10 @@ class Beaker {
                                         //!< this pattern. Lower values take precedence.
 
     int ruleCount_ = 0;
+
+    vector<gridCoordinatesValueTripletT> newPixelList_;
+    vector<gridCoordinatesValueTripletT> backgroundPixelList_;
+
     // template <typename U>
     friend class BeakerNode<Beaker<V>>;
 };
@@ -417,7 +445,8 @@ EMSCRIPTEN_BINDINGS(PixelReactor) {
         .function("makePixelList", &Beaker<unsigned char>::makePixelList, allow_raw_pointers())
         .function("makeNewReactionRule", &Beaker<unsigned char>::makeNewReactionRule,
                   allow_raw_pointers());
-    register_vector<Beaker<unsigned char>::gridCoordinatesValueTripletT>("vector<gridCoordinatesValueTripletT>");
+    register_vector<Beaker<unsigned char>::gridCoordinatesValueTripletT>(
+        "vector<gridCoordinatesValueTripletT>");
     // .class_function("makeNewReactionRule_st", &Beaker<unsigned char>::makeNewReactionRule_st,
     //                 allow_raw_pointers());
 }
