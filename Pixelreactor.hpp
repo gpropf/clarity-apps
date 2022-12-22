@@ -95,9 +95,23 @@ class BeakerNode : public HybridNode<B> {
 
             stringBuilder.withHoverText("Rule priority; lower numbers are higher priority")
                 .labelGivenNode(priorityTIN_, "Rule priority");
+
+            auto beakerNameSetSuccessor = [this](HybridNode<string> *hn, string *v) {
+                auto pos = v->find(':');
+                if (pos != std::string::npos) {
+                    cout << ": found at position " << pos << endl;
+                    auto succName = v->substr(pos + 1, std::string::npos);
+                    cout << "Successor:" << succName << endl;
+                    auto successorBeakerIt = this->mainBeaker_->findRuleByName(succName);
+                    this->cppVal_->successor_ = *successorBeakerIt;
+                    cout << "this->cppVal_->successor_: " << this->cppVal_->successor_ << endl;
+                }
+            };
+
             beakerName_tinp_ = stringBuilder.withName("beakerName")
                                    .withCppVal(&this->cppVal_->name_)
                                    .withAttributes({{"class", val("medium_width")}})
+                                   .withStateFunction(beakerNameSetSuccessor)
                                    .textInput();
 
             // auto *successorOffset = stringBuilder
@@ -125,13 +139,13 @@ class BeakerNode : public HybridNode<B> {
             stringBuilder.withHoverText("y offset")
                 .labelGivenNode(yOffset_tinp, "y offset of successor rule");
 
-            //.withLabelText("")
-
             stringBuilder.withHoverText("Name of reaction rule")
                 .labelGivenNode(beakerName_tinp_, "Reaction Rule Name");
             stringBuilder.br();
 
         } else {
+            mainBeaker_ = this->cppVal_;
+
             val makeNewReactionRule_el =
                 val::global("elgMakeNewReactionRuleButtonClicked")(this->cppVal_);
 
@@ -248,6 +262,7 @@ class BeakerNode : public HybridNode<B> {
     ClarityNode *beakerName_tinp_;
     ClarityNode *priorityTIN_;
     CanvasGrid<unsigned char> *beakerCanvas_;
+    Beaker<unsigned char> *mainBeaker_;
 };
 
 /**
@@ -298,6 +313,12 @@ class Beaker {
         beakerNode_->refresh();
     }
 
+    auto findRuleByName(const string &ruleName) {
+        auto nameIs = [&ruleName](Beaker *b) { return (b->name_ == ruleName); };
+        auto it = find_if(reactionRules_.begin(), reactionRules_.end(), nameIs);
+        return it;
+    }
+
     vector<gridCoordinatesValueTripletT> makePixelList() {
         vector<gridCoordinatesValueTripletT> pixels;
         for (gridCoordinateT i = 0; i < this->gridWidth_; i++) {
@@ -336,6 +357,7 @@ class Beaker {
     }
 
     bool matchesAt(Beaker<V> &rule, gridCoordinatePairT matchCoordiates) {
+        findRuleByName("rule-1");
         bool match = matchList(rule.newPixelList_, matchCoordiates);
         match = match && matchList(rule.backgroundPixelList_, matchCoordiates);
         return match;
@@ -364,10 +386,10 @@ class Beaker {
         for (gridCoordinateT j = 0; j < gridHeight_; j++) {
             string vals = "";
             for (gridCoordinateT i = 0; i < gridWidth_; i++) {
-
                 if (reactionRules_.size() > 0) {
-                    bool matches = matchesAt(*reactionRules_[0], pair(i,j));
-                    if (matches) beakerNode_->nodelog("Match at " + clto_str(i) + "," + clto_str(j));
+                    bool matches = matchesAt(*reactionRules_[0], pair(i, j));
+                    if (matches)
+                        beakerNode_->nodelog("Match at " + clto_str(i) + "," + clto_str(j));
                 }
 
                 V xyVal = this->beakerNode_->beakerCanvas_->getValXY(i, j);
