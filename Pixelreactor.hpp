@@ -101,9 +101,11 @@ class BeakerNode : public HybridNode<B> {
                 if (pos != std::string::npos) {
                     cout << ": found at position " << pos << endl;
                     auto succName = v->substr(pos + 1, std::string::npos);
+                    hn->setCppVal(v->substr(0, pos));
+                    hn->refresh();
                     cout << "Successor:" << succName << endl;
-                    auto successorBeakerIt = this->mainBeaker_->findRuleByName(succName);
-                    this->cppVal_->successor_ = *successorBeakerIt;
+                    auto successorBeakerIt = this->cppVal_->parentBeaker_->findRuleByName(succName);
+                    this->cppVal_->successor_ = successorBeakerIt;
                     cout << "this->cppVal_->successor_: " << this->cppVal_->successor_ << endl;
                 }
             };
@@ -144,7 +146,7 @@ class BeakerNode : public HybridNode<B> {
             stringBuilder.br();
 
         } else {
-            mainBeaker_ = this->cppVal_;
+            //mainBeaker_ = this->cppVal_;
 
             val makeNewReactionRule_el =
                 val::global("elgMakeNewReactionRuleButtonClicked")(this->cppVal_);
@@ -262,7 +264,7 @@ class BeakerNode : public HybridNode<B> {
     ClarityNode *beakerName_tinp_;
     ClarityNode *priorityTIN_;
     CanvasGrid<unsigned char> *beakerCanvas_;
-    Beaker<unsigned char> *mainBeaker_;
+    //Beaker<unsigned char> *mainBeaker_;
 };
 
 /**
@@ -301,6 +303,8 @@ class Beaker {
     void makeNewReactionRule() {
         Beaker *reactionRule = new Beaker(this->ruleGridWidth_, this->ruleGridHeight_, 150, 150,
                                           "rule-" + clto_str(++this->ruleCount_), true);
+
+        reactionRule->parentBeaker_ = this;
         this->reactionRules_.push_back(reactionRule);
 
         CLNodeFactory<BeakerNode, Beaker<V>, int> beakerBuilder("div", "rr");
@@ -313,10 +317,11 @@ class Beaker {
         beakerNode_->refresh();
     }
 
-    auto findRuleByName(const string &ruleName) {
+    Beaker<unsigned char> * findRuleByName(const string &ruleName) {
         auto nameIs = [&ruleName](Beaker *b) { return (b->name_ == ruleName); };
         auto it = find_if(reactionRules_.begin(), reactionRules_.end(), nameIs);
-        return it;
+        if (it == reactionRules_.end()) return nullptr;
+        return *it;
     }
 
     vector<gridCoordinatesValueTripletT> makePixelList() {
@@ -357,7 +362,7 @@ class Beaker {
     }
 
     bool matchesAt(Beaker<V> &rule, gridCoordinatePairT matchCoordiates) {
-        findRuleByName("rule-1");
+        //findRuleByName("rule-1");
         bool match = matchList(rule.newPixelList_, matchCoordiates);
         match = match && matchList(rule.backgroundPixelList_, matchCoordiates);
         return match;
@@ -439,6 +444,8 @@ class Beaker {
                                          //!< can be called when this updates.
 
     vector<Beaker *> reactionRules_;
+
+    Beaker * parentBeaker_;
 
     Beaker *successor_;                 //!< The pattern we replace this one with.
     int successorOffsetX_ = 0;          //!< X offset of replacement pattern.
