@@ -104,9 +104,13 @@ class BeakerNode : public HybridNode<B> {
                     hn->setCppVal(v->substr(0, pos));
                     hn->refresh();
                     cout << "Successor:" << succName << endl;
-                    auto successorBeakerIt = this->cppVal_->parentBeaker_->findRuleByName(succName);
-                    this->cppVal_->successor_ = successorBeakerIt;
-                    cout << "this->cppVal_->successor_: " << this->cppVal_->successor_ << endl;
+                    auto successorBeaker = this->cppVal_->parentBeaker_->findRuleByName(succName);
+                    if (successorBeaker != nullptr) {
+                        this->cppVal_->successor_ = successorBeaker;
+                        this->successorName_tinp_->setCppValPtr(&successorBeaker->name_);
+                        this->successorName_tinp_->refresh();
+                        cout << "this->cppVal_->successor_: " << this->cppVal_->successor_ << endl;
+                    }
                 }
             };
 
@@ -141,12 +145,27 @@ class BeakerNode : public HybridNode<B> {
             stringBuilder.withHoverText("y offset")
                 .labelGivenNode(yOffset_tinp, "y offset of successor rule");
 
-            stringBuilder.withHoverText("Name of reaction rule")
+            stringBuilder
+                .withHoverText(
+                    "To set the rule's successor, just type ':' after the rule name, followed by "
+                    "the name of the rule "
+                    "you want as sucessor and hit enter.")
                 .labelGivenNode(beakerName_tinp_, "Reaction Rule Name");
+
+            // stringBuilder.br();
+
+            successorName_tinp_ = stringBuilder.withName("successor_tinp_")
+                                      .withCppVal(&this->cppVal_->successor_->name_)
+                                      .withAttributes({{"class", val("medium_width")}})
+                                      .withDisable()
+                                      .textInput();
+
+            stringBuilder.withHoverText("Name of successor rule")
+                .labelGivenNode(successorName_tinp_, "Successor Rule Name");
             stringBuilder.br();
 
         } else {
-            //mainBeaker_ = this->cppVal_;
+            // mainBeaker_ = this->cppVal_;
 
             val makeNewReactionRule_el =
                 val::global("elgMakeNewReactionRuleButtonClicked")(this->cppVal_);
@@ -262,9 +281,10 @@ class BeakerNode : public HybridNode<B> {
 
     ClarityNode *reactionRulesDiv_;
     ClarityNode *beakerName_tinp_;
+    HybridNode<string> *successorName_tinp_;
     ClarityNode *priorityTIN_;
     CanvasGrid<unsigned char> *beakerCanvas_;
-    //Beaker<unsigned char> *mainBeaker_;
+    // Beaker<unsigned char> *mainBeaker_;
 };
 
 /**
@@ -317,7 +337,7 @@ class Beaker {
         beakerNode_->refresh();
     }
 
-    Beaker<unsigned char> * findRuleByName(const string &ruleName) {
+    Beaker<unsigned char> *findRuleByName(const string &ruleName) {
         auto nameIs = [&ruleName](Beaker *b) { return (b->name_ == ruleName); };
         auto it = find_if(reactionRules_.begin(), reactionRules_.end(), nameIs);
         if (it == reactionRules_.end()) return nullptr;
@@ -345,6 +365,18 @@ class Beaker {
         return pixels;
     }
 
+    /**
+     * @brief Just a debug method to see if the successor setting code works.
+     *
+     */
+    void printRuleStats() {
+        int i = 0;
+        for (auto rule : this->reactionRules_) {
+            cout << "Rule " << i++ << ": " << rule->name_ << ", succ: " << rule->successor_->name_
+                 << endl;
+        }
+    }
+
     bool matchList(vector<gridCoordinatesValueTripletT> &rulePixelList,
                    gridCoordinatePairT matchCoordiates) {
         auto [mx, my] = matchCoordiates;
@@ -362,7 +394,7 @@ class Beaker {
     }
 
     bool matchesAt(Beaker<V> &rule, gridCoordinatePairT matchCoordiates) {
-        //findRuleByName("rule-1");
+        // findRuleByName("rule-1");
         bool match = matchList(rule.newPixelList_, matchCoordiates);
         match = match && matchList(rule.backgroundPixelList_, matchCoordiates);
         return match;
@@ -413,6 +445,7 @@ class Beaker {
         // this->beakerNode_->beakerCanvas_->drawGrid();
         // this->beakerNode_->beakerCanvas_->drawGrid();
         this->beakerNode_->refresh();
+        this->printRuleStats();
     }
 
     static void makeNewReactionRule_st(Beaker *b) { b->makeNewReactionRule(); }
@@ -445,9 +478,9 @@ class Beaker {
 
     vector<Beaker *> reactionRules_;
 
-    Beaker * parentBeaker_;
+    Beaker *parentBeaker_;
 
-    Beaker *successor_;                 //!< The pattern we replace this one with.
+    Beaker *successor_ = this;          //!< The pattern we replace this one with.
     int successorOffsetX_ = 0;          //!< X offset of replacement pattern.
     int successorOffsetY_ = 0;          //!< Y offset of replacement pattern.
     priorityT successionPriority_ = 1;  //!< Priority assigned to pixels replaced by application of
