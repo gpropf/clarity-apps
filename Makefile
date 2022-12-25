@@ -35,10 +35,12 @@ pixelreactor-prod: $(PIXELREACTOR_OBJS)
 
 pixelreactor: $(PIXELREACTOR_OBJS)	
 	$(ENV) $(CC)  $(CFLAGS) -lembind --pre-js jsaux/clapps-aux.js $(PIXELREACTOR_OBJS) -o $(JSOUT)
+	cp $(JSOUT) pixelreactor.js
 
 #matchsticks: CFLAGS	= -O3 -std=c++17 -I./clarity 
 matchsticks: $(MATCHSTICKS_OBJS)	
 	$(ENV) $(CC)  $(CFLAGS) -lembind --pre-js jsaux/clapps-aux.js $(MATCHSTICKS_OBJS) -o $(JSOUT)
+	cp $(JSOUT) matchsticks.js
 
 CLDemo.o: CLDemo.hpp
 	$(ENV) $(CC) CLDemo.hpp -c $(CFLAGS)
@@ -54,10 +56,10 @@ docsclean:
 	rm -rf html latex
 
 clean:
-	rm -f *.o 
+	rm -f *.o matchsticks.js pixelreactor.js
 
 realclean: clean
 	cd clarity; make realclean
 	rm -f *.wasm *.wasm.map *.a $(JSOUT)
 
-#all: pixelreactor cldemo docs
+all: pixelreactor matchsticks docs
