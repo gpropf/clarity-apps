@@ -10,7 +10,7 @@ CFLAGS	=  -O0 -g -std=c++17 -I./clarity -D USETF
 
 JSOUT	= clarity_embind.js
 
-FRAMEWORK_DEPS = JSProxyNode.js Util.js pixelreactor.html Makefile
+# FRAMEWORK_DEPS = clarity/JSProxyNode.js clarity/Util.js pixelreactor.html Makefile
 
 # %.o : %.cpp $(FRAMEWORK_DEPS)
 # 	$(ENV) $(CC) $< -o $@ -c $(CFLAGS)
@@ -25,13 +25,24 @@ FRAMEWORK_DEPS = JSProxyNode.js Util.js pixelreactor.html Makefile
 
 CLARITY_OBJS = clarity/ClarityNode.o clarity/CanvasElement.o clarity/Selectables.o clarity/clarity.o
 
+CLARITY_JS = clarity/JSProxyNode.js clarity/Util.js clarity/Selectables.js
+
 PIXELREACTOR_OBJS = pixelreactor.o $(CLARITY_OBJS)
 MATCHSTICKS_OBJS = matchsticks.o $(CLARITY_OBJS)
 
 pixelreactor-prod: CFLAGS = -O1 -std=c++17 -I./clarity
 pixelreactor-prod: ENV =
 pixelreactor-prod: $(PIXELREACTOR_OBJS)	
-	$(ENV) $(CC) $(CFLAGS) -lembind --pre-js jsaux/clapps-aux.js $(PIXELREACTOR_OBJS)  -o $(JSOUT)
+	$(ENV) $(CC) $(CFLAGS) -lembind --pre-js jsaux/clapps-aux.js $(PIXELREACTOR_OBJS) -o $(JSOUT)
+
+
+pixelreactor-monolithic: CFLAGS = -O1 -std=c++17 -I./clarity
+pixelreactor-monolithic: ENV =
+pixelreactor-monolithic: $(PIXELREACTOR_OBJS) $(CLARITY_JS)
+	$(ENV) $(CC) $(CFLAGS) -lembind --pre-js jsaux/clapps-aux.js --pre-js clarity/JSProxyNode.js --pre-js clarity/Util.js --pre-js clarity/Selectables.js $(PIXELREACTOR_OBJS) -o $(JSOUT)
+
+
+
 
 pixelreactor: $(PIXELREACTOR_OBJS)	
 	$(ENV) $(CC)  $(CFLAGS) -lembind --pre-js jsaux/clapps-aux.js $(PIXELREACTOR_OBJS) -o $(JSOUT)
