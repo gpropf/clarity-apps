@@ -356,7 +356,7 @@ class Beaker {
                 gridCoordinatePairT xy = pair(i, j);
                 gridCoordinatesValueTripletT xyv = pair(xy, pixelVal);
                 if (pixelVal != 0) {
-                    pixels.push_back(xyv);
+                    this->newPixelList_.push_back(xyv);
                 } else {
                     this->backgroundPixelList_.push_back(xyv);
                 }
@@ -365,7 +365,7 @@ class Beaker {
         for (auto rule : reactionRules_) {
             rule->makePixelList();
         }
-        this->newPixelList_ = pixels;
+        //this->newPixelList_ = pixels;
         return pixels;
     }
 
@@ -418,13 +418,23 @@ class Beaker {
 
     void laydownMatchPixels(vector<gridCoordinatesValueTripletT> &rulePixelList,
                             gridCoordinatePairT matchCoordiates, Beaker<V> &reactionRule) {
+        auto [mx, my] = matchCoordiates;
+        int c = 0;
         for (auto pixel : rulePixelList) {
             auto [gridCoords, value] = pixel;
-            auto [x, y] = gridCoords;
-            auto linearGridAddress = linearizeGridCoordinates(x, y);
+            int px = gridCoords.first;
+            int py = gridCoords.second;
+            px += mx;
+            py += my;
+            this->beakerNode_->beakerCanvas_->wrapCoordiates(px, py);
+            auto linearGridAddress = linearizeGridCoordinates(px, py);
             valuePriorityPairT vp = pair(value, reactionRule.successionPriority_);
+            cout << "Linear address for push_back is " << linearGridAddress << endl;
             successionGrid_[linearGridAddress].push_back(vp);
+            c++;
         }
+        cout << "Done laying down " << c << " match pixels for rule: " << reactionRule.name_ << endl;
+        
     }
 
     /**
@@ -454,7 +464,7 @@ class Beaker {
                     bool matches = matchesAt(*reactionRules_[0], pair(i, j));
                     if (matches) {
                         beakerNode_->nodelog("Match at " + clto_str(i) + "," + clto_str(j));
-                        laydownMatchPixels(reactionRules_[0]->newPixelList_, pair(i, j),
+                        laydownMatchPixels(reactionRules_[0]->successor_->newPixelList_, pair(i, j),
                                            *reactionRules_[0]);
                     }
                 }
