@@ -112,6 +112,7 @@ class BeakerNode : public HybridNode<B> {
                         cout << "this->cppVal_->successor_: " << this->cppVal_->successor_ << endl;
                     }
                 }
+                // if (*v != hn->getCppVal()) this->cppVal_->parentBeaker_->beakerNode_->refresh();
             };
 
             beakerName_tinp_ = stringBuilder.withName("beakerName")
@@ -313,7 +314,10 @@ class Beaker {
           gridPixelWidth_(gridPixelWidth),
           gridPixelHeight_(gridPixelHeight),
           name_(name),
-          isReactionRule_(isReactionRule) {}
+          isReactionRule_(isReactionRule) {
+        if (!isReactionRule_)
+            successionGrid_ = new vector<valuePriorityPairT>[gridWidth * gridHeight];
+    }
 
     /**
      * @brief Creates a new smaller BeakerNode to serve as a reaction pattern to run in the main
@@ -401,6 +405,29 @@ class Beaker {
     }
 
     /**
+     * @brief This is just to make sure that we are always calculating addresses within our grids
+     * the same way since there are two ways to organize these memory spaces.
+     *
+     * @param x
+     * @param y
+     * @return int
+     */
+    inline int linearizeGridCoordinates(gridCoordinateT x, gridCoordinateT y) {
+        return (y * gridWidth_ + x);
+    }
+
+    void laydownMatchPixels(vector<gridCoordinatesValueTripletT> &rulePixelList,
+                            gridCoordinatePairT matchCoordiates, Beaker<V> &reactionRule) {
+        for (auto pixel : rulePixelList) {
+            auto [gridCoords, value] = pixel;
+            auto [x, y] = gridCoords;
+            auto linearGridAddress = linearizeGridCoordinates(x, y);
+            valuePriorityPairT vp = pair(value, reactionRule.successionPriority_);
+            successionGrid_[linearGridAddress].push_back(vp);
+        }
+    }
+
+    /**
      * @brief Propagates the color change in the main grid down to the reaction rules. Not
      * currently in use.
      *
@@ -425,8 +452,11 @@ class Beaker {
             for (gridCoordinateT i = 0; i < gridWidth_; i++) {
                 if (reactionRules_.size() > 0) {
                     bool matches = matchesAt(*reactionRules_[0], pair(i, j));
-                    if (matches)
+                    if (matches) {
                         beakerNode_->nodelog("Match at " + clto_str(i) + "," + clto_str(j));
+                        laydownMatchPixels(reactionRules_[0]->newPixelList_, pair(i, j),
+                                           *reactionRules_[0]);
+                    }
                 }
 
                 V xyVal = this->beakerNode_->beakerCanvas_->getValXY(i, j);
@@ -466,10 +496,10 @@ class Beaker {
 
     V *gridArray;  //!< The actual grid data to be used by the CanvasGrid in BeakerNode.
 
-    valuePriorityPairT
-        *successionGrid;  //!< Grid with same dimensions as main grid but allows us to store
-                          //!< "stacks" of value-priority pairs so that we can calculate correct
-                          //!< succession value for each point in the grid.
+    vector<valuePriorityPairT>
+        *successionGrid_;  //!< Grid with same dimensions as main grid but allows us to store
+                           //!< "stacks" of value-priority pairs so that we can calculate correct
+                           //!< succession value for each point in the grid.
 
     int iterationCount_ =
         0;  //!< Counter that advances every time the rules are applied to the grid.
