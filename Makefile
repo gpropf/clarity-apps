@@ -39,7 +39,7 @@ pixelreactor-prod: $(PIXELREACTOR_OBJS)
 pixelreactor-monolithic: CFLAGS = -O1 -std=c++17 -I./clarity
 pixelreactor-monolithic: ENV =
 pixelreactor-monolithic: $(PIXELREACTOR_OBJS) $(CLARITY_JS)
-	$(ENV) $(CC) $(CFLAGS) -lembind --pre-js jsaux/clapps-aux.js --pre-js clarity/JSProxyNode.js --pre-js clarity/Util.js --pre-js clarity/Selectables.js $(PIXELREACTOR_OBJS) -o $(JSOUT)
+	$(ENV) $(CC) $(CFLAGS) -lembind --post-js jsaux/clapps-aux.js --pre-js clarity/JSProxyNode.js --post-js clarity/Util.js --post-js clarity/Selectables.js $(PIXELREACTOR_OBJS) -o $(JSOUT)
 
 
 
