@@ -39,7 +39,7 @@ pixelreactor-prod: $(PIXELREACTOR_OBJS)
 pixelreactor-monolithic: CFLAGS = -O1 -std=c++17 -I./clarity
 pixelreactor-monolithic: ENV =
 pixelreactor-monolithic: $(PIXELREACTOR_OBJS) $(CLARITY_JS)
-	$(ENV) $(CC) $(CFLAGS) -lembind --post-js jsaux/clapps-aux.js --pre-js clarity/JSProxyNode.js --post-js clarity/Util.js --post-js clarity/Selectables.js $(PIXELREACTOR_OBJS) -o $(JSOUT)
+	$(ENV) $(CC) $(CFLAGS) -lembind --post-js jsaux/clapps-aux.js --post-js clarity/JSProxyNode.js --post-js clarity/Util.js --post-js clarity/Selectables.js $(PIXELREACTOR_OBJS) -o $(JSOUT)
 
 
 
@@ -49,6 +49,13 @@ pixelreactor: $(PIXELREACTOR_OBJS)
 	cp $(JSOUT) pixelreactor.js
 
 #matchsticks: CFLAGS	= -O3 -std=c++17 -I./clarity 
+
+
+matchsticks-monolithic: CFLAGS = -O1 -std=c++17 -I./clarity
+matchsticks-monolithic: ENV =
+matchsticks-monolithic: $(MATCHSTICKS_OBJS) $(CLARITY_JS)
+	$(ENV) $(CC) $(CFLAGS) -lembind --post-js jsaux/clapps-aux.js --post-js clarity/JSProxyNode.js --post-js clarity/Util.js --post-js clarity/Selectables.js $(MATCHSTICKS_OBJS) -o $(JSOUT)
+
 matchsticks: $(MATCHSTICKS_OBJS)	
 	$(ENV) $(CC)  $(CFLAGS) -lembind --pre-js jsaux/clapps-aux.js $(MATCHSTICKS_OBJS) -o $(JSOUT)
 	cp $(JSOUT) matchsticks.js
