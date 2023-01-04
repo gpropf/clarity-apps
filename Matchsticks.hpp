@@ -17,8 +17,8 @@ struct ColorRGBA {
     ColorRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
         : r_(r), g_(g), b_(b), a_(a) {}
     string toString() {
-        return "rgba(" + clto_str(int(r_)) + "," + clto_str(int(g_)) + "," +
-                          clto_str(int(b_)) + "," + clto_str(int(a_)) + ")";
+        return "rgba(" + clto_str(int(r_)) + "," + clto_str(int(g_)) + "," + clto_str(int(b_)) +
+               "," + clto_str(int(a_)) + ")";
     }
 };
 
@@ -98,7 +98,15 @@ class StickWorldNode : public HybridNode<B> {
     }
 
     inline void tick() {
-        if (this->cppVal_->playMode == 0) return;
+        if (this->cppVal_->playMode == 0) {
+            // this->playPauseButtonMsg_ = "PAUSE";
+            if (this->playPauseButton_ != nullptr) this->playPauseButton_->setDOMVal(val("Play"));
+            return;
+        } else {
+            // this->playPauseButtonMsg_ = "PLAY";
+            if (this->playPauseButton_ != nullptr) this->playPauseButton_->setDOMVal(val("Pause"));
+        }
+
         cout << "SWNode TICK TOCK!" << endl;
         this->cppVal_->iterationCount_++;
         int i = this->cppVal_->iterationCount_;
@@ -162,20 +170,24 @@ class StickWorldNode : public HybridNode<B> {
         // val canvasFillcolor = val::global("canvasFillcolor");
         // val ctx = swCanvas_->getDomElement().call<val>("getContext", val("2d"));
         val ctx = swCanvas_->getContext2d();
-        //ctx.call<void>("save");
+        // ctx.call<void>("save");
         ctx.set("fillStyle", val("#eeeeee"));
         ctx.call<void>("fillRect", val(0), val(0), val(this->cppVal_->getSWCanvasWidth()),
                        val(this->cppVal_->getSWCanvasHeight()));
         // fillRect(0, 0, w, h);
-        //ctx.call<void>("restore");
-        val::global("setTickerSWNode")(*this);
+        // ctx.call<void>("restore");
 
         val playPauseClassMap = ClarityNode::JSProxyNode_["playPauseClassMap"];
         NumWrapper<int> toggleWrapper(&this->cppVal_->playMode, 2);
-        auto *playPauseButton = stringBuilder.withName("playPauseButton")
-                                .withClass("small_width")
-                                .cycleButton<NumWrapper<int>>("Play", toggleWrapper, playPauseClassMap);
-        // swCanvas_->runDrawFunction();
+        this->playPauseButton_ =
+            stringBuilder.withName("playPauseButton_")
+                .withClass("small_width")
+                .cycleButton<NumWrapper<int>>("--", toggleWrapper, playPauseClassMap);
+
+        val::global("setTickerSWNode")(*this);
+
+        // auto playPauseButtonStateFn = [this](HybridNode<string> *hn, string *v) {};
+        //  swCanvas_->runDrawFunction();
     }
 
     // inline virtual void doNothing() {
@@ -190,7 +202,9 @@ class StickWorldNode : public HybridNode<B> {
     ClarityNode *reactionRulesDiv_;
     CanvasElement<int> *swCanvas_;
     ClarityNode *stickworldName_tinp;
+    HybridNode<string> *playPauseButton_;
     val context2d_;
+    //string playPauseButtonMsg_ = "Play";
     // ClarityNode *swCanvas_;
 };
 
