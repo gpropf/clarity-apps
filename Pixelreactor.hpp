@@ -87,7 +87,7 @@ class BeakerNode : public HybridNode<B> {
         stringBuilder.labelGivenNode(canvas1CurrentCellColor_tinp, "Current Color Index");
 
         if (this->cppVal_->isReactionRule_) {
-            priorityTIN_ = priorityBuilder.withName("priority")
+            priorityTIN_ = intBuilder.withName("priority")
                                .withCppVal(&this->cppVal_->successionPriority_)
                                .withAttributes({{"class", val("small_width")}})
                                .textInput();
@@ -299,7 +299,7 @@ class BeakerNode : public HybridNode<B> {
 template <typename V>
 class Beaker {
    public:
-    typedef short int priorityT;
+    typedef short int priorityT; // I'm using an int type for the text input field for priorities because the values weren't "sticking" otherwise. This is a type related bug.
     typedef pair<V, priorityT> valuePriorityPairT;
     typedef unsigned short int gridCoordinateT;
     typedef pair<gridCoordinateT, gridCoordinateT> gridCoordinatePairT;
@@ -314,8 +314,8 @@ class Beaker {
           gridPixelHeight_(gridPixelHeight),
           name_(name),
           isReactionRule_(isReactionRule) {
-        if (!isReactionRule_)
-            successionGrid_ = new vector<valuePriorityPairT>[gridWidth * gridHeight];
+        // if (!isReactionRule_)
+        //     successionGrid_ = new vector<valuePriorityPairT>[gridWidth * gridHeight];
     }
 
     /**
@@ -429,10 +429,21 @@ class Beaker {
             auto linearGridAddress = linearizeGridCoordinates(px, py);
             valuePriorityPairT vp = pair(value, reactionRule.successionPriority_);
             cout << "Linear address for push_back is " << linearGridAddress << endl;
-            successionGrid_[linearGridAddress].push_back(vp);
+            successionMap_[pair(px,py)].push_back(vp);
+            //successionGrid_[linearGridAddress].push_back(vp);
             c++;
         }
         cout << "Done laying down " << c << " match pixels for rule: " << reactionRule.name_ << endl;
+        for (const auto& [key, value] : this->successionMap_) {
+            auto [px,py] = key;
+            vector<valuePriorityPairT> vpStack = value;
+            cout << "coordinate: " << px << ", " << py << endl;
+            for (auto [val,pri]: vpStack) {
+                cout << "\tval = " << val << ", pri = " << pri << endl;
+            }
+        }
+    //std::cout << key << " has value " << value << std::endl;
+    //std::cout << it->first << " => " << it->second << '\n';
         
     }
 
@@ -505,10 +516,12 @@ class Beaker {
 
     V *gridArray;  //!< The actual grid data to be used by the CanvasGrid in BeakerNode.
 
-    vector<valuePriorityPairT>
-        *successionGrid_;  //!< Grid with same dimensions as main grid but allows us to store
-                           //!< "stacks" of value-priority pairs so that we can calculate correct
-                           //!< succession value for each point in the grid.
+    // vector<valuePriorityPairT>
+    //     *successionGrid_;  //!< Grid with same dimensions as main grid but allows us to store
+    //                        //!< "stacks" of value-priority pairs so that we can calculate correct
+    //                        //!< succession value for each point in the grid.
+
+    map<gridCoordinatePairT, vector<valuePriorityPairT>> successionMap_;
 
     int iterationCount_ =
         0;  //!< Counter that advances every time the rules are applied to the grid.
@@ -522,7 +535,8 @@ class Beaker {
     Beaker *successor_ = this;          //!< The pattern we replace this one with.
     int successorOffsetX_ = 0;          //!< X offset of replacement pattern.
     int successorOffsetY_ = 0;          //!< Y offset of replacement pattern.
-    priorityT successionPriority_ = 1;  //!< Priority assigned to pixels replaced by application of
+    // priorityT successionPriority_ = 1;  //!< 
+    int successionPriority_ = 1;  //!< Priority assigned to pixels replaced by application of
                                         //!< this pattern. Lower values take precedence.
 
     int ruleCount_ = 0;
