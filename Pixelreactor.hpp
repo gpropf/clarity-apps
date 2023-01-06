@@ -439,7 +439,7 @@ class Beaker {
             vector<valuePriorityPairT> vpStack = value;
             cout << "coordinate: " << px << ", " << py << endl;
             for (auto [val,pri]: vpStack) {
-                cout << "\tval = " << val << ", pri = " << pri << endl;
+                cout << "\tval = " << int(val) << ", pri = " << pri << endl;
             }
         }
     //std::cout << key << " has value " << value << std::endl;
