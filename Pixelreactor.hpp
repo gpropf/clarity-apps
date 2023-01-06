@@ -78,13 +78,13 @@ class BeakerNode : public HybridNode<B> {
 
         beakerCanvas_->setCurrentCellVal(2);
 
-        auto *canvas1CurrentCellColor_tinp =
-            canvasBuilder.withName("currentCellColor_tinp")
+        auto *canvas1CurrentCellColorTextinput =
+            canvasBuilder.withName("currentCellColorTextinput")
                 .withCppVal(beakerCanvas_->getPtr2CurrentCellVal())
                 .withAttributes({{"style", val("border: 3px solid ##77bbee")}, {"size", val(2)}})
                 .textInput();
 
-        stringBuilder.labelGivenNode(canvas1CurrentCellColor_tinp, "Current Color Index");
+        stringBuilder.labelGivenNode(canvas1CurrentCellColorTextinput, "Current Color Index");
 
         if (this->cppVal_->isReactionRule_) {
             priorityTIN_ = intBuilder.withName("priority")
@@ -106,15 +106,15 @@ class BeakerNode : public HybridNode<B> {
                     auto successorBeaker = this->cppVal_->parentBeaker_->findRuleByName(succName);
                     if (successorBeaker != nullptr) {
                         this->cppVal_->successor_ = successorBeaker;
-                        this->successorName_tinp_->setCppValPtr(&successorBeaker->name_);
-                        this->successorName_tinp_->refresh();
+                        this->successorNameTextinput_->setCppValPtr(&successorBeaker->name_);
+                        this->successorNameTextinput_->refresh();
                         cout << "this->cppVal_->successor_: " << this->cppVal_->successor_ << endl;
                     }
                 }
                 // if (*v != hn->getCppVal()) this->cppVal_->parentBeaker_->beakerNode_->refresh();
             };
 
-            beakerName_tinp_ = stringBuilder.withName("beakerName")
+            beakerNameTextinput_ = stringBuilder.withName("beakerName")
                                    .withCppVal(&this->cppVal_->name_)
                                    .withAttributes({{"class", val("medium_width")}})
                                    .withStateFunction(beakerNameSetSuccessor)
@@ -129,39 +129,39 @@ class BeakerNode : public HybridNode<B> {
             // stringBuilder.withHoverText("Enter successor offset as x,y pair, e.g. 2,-1")
             //     .labelGivenNode(successorOffset, "Successor Offset");
 
-            auto *xOffset_tinp = intBuilder.withName("xOffset")
+            auto *xOffsetTextinput = intBuilder.withName("xOffset")
                                      .withClass("small_width")
                                      .withCppVal(&this->cppVal_->successorOffsetX_)
                                      .textInput();
 
             stringBuilder.withHoverText("x offset")
-                .labelGivenNode(xOffset_tinp, "x offset of successor rule");
+                .labelGivenNode(xOffsetTextinput, "x offset of successor rule");
 
-            auto *yOffset_tinp = intBuilder.withName("yOffset")
+            auto *yOffsetTextinput = intBuilder.withName("yOffset")
                                      .withClass("small_width")
                                      .withCppVal(&this->cppVal_->successorOffsetY_)
                                      .textInput();
 
             stringBuilder.withHoverText("y offset")
-                .labelGivenNode(yOffset_tinp, "y offset of successor rule");
+                .labelGivenNode(yOffsetTextinput, "y offset of successor rule");
 
             stringBuilder
                 .withHoverText(
                     "To set the rule's successor, just type ':' after the rule name, followed by "
                     "the name of the rule "
                     "you want as sucessor and hit enter.")
-                .labelGivenNode(beakerName_tinp_, "Reaction Rule Name");
+                .labelGivenNode(beakerNameTextinput_, "Reaction Rule Name");
 
             // stringBuilder.br();
 
-            successorName_tinp_ = stringBuilder.withName("successor_tinp_")
+            successorNameTextinput_ = stringBuilder.withName("successorNameTextinput_")
                                       .withCppVal(&this->cppVal_->successor_->name_)
                                       .withAttributes({{"class", val("medium_width")}})
                                       .withDisable()
                                       .textInput();
 
             stringBuilder.withHoverText("Name of successor rule")
-                .labelGivenNode(successorName_tinp_, "Successor Rule Name");
+                .labelGivenNode(successorNameTextinput_, "Successor Rule Name");
             stringBuilder.br();
 
         } else {
@@ -200,39 +200,39 @@ class BeakerNode : public HybridNode<B> {
                           .textarea(cmdarea_text, 6, 60);
             textBuilder.br();
 
-            auto *beakerGridWidth_tinp = intBuilder.withName("beakerGridWidth_tinp")
+            auto *beakerGridWidthTextinput = intBuilder.withName("beakerGridWidthTextinput")
                                              .withCppVal(&this->cppVal_->gridWidth_)
                                              .withAttributes({{"class", val("small_width")}})
                                              .textInput();
 
-            auto *beakerGridWidth_tinp_lbl =
-                intBuilder.label(beakerGridWidth_tinp, "Beaker grid width.", true);
+            auto *beakerGridWidthLabel =
+                intBuilder.label(beakerGridWidthTextinput, "Beaker grid width.", true);
 
-            auto *beakerGridHeight_tinp = intBuilder.withName("beakerGridHeight_tinp")
+            auto *beakerGridHeightTextinput = intBuilder.withName("beakerGridHeightTextinput")
                                               .withCppVal(&this->cppVal_->gridHeight_)
                                               .withAttributes({{"class", val("small_width")}})
                                               .textInput();
 
-            auto *beakerGridHeight_tinp_lbl =
-                intBuilder.label(beakerGridHeight_tinp, "Beaker grid height.", true);
+            auto *beakerGridHeightLabel =
+                intBuilder.label(beakerGridHeightTextinput, "Beaker grid height.", true);
 
             textBuilder.br();
 
-            auto *ruleFrameWidth_tinp = intBuilder.withName("ruleFrameWidth_tinp")
+            auto *ruleFrameWidthTextinput = intBuilder.withName("ruleFrameWidthTextinput")
                                             .withCppVal(&this->cppVal_->ruleGridWidth_)
                                             .withAttributes({{"class", val("small_width")}})
                                             .textInput();
 
-            auto *ruleFrameWidth_tinp_lbl =
-                intBuilder.label(ruleFrameWidth_tinp, "Width of new rules.", true);
+            auto *ruleFrameWidthLabel =
+                intBuilder.label(ruleFrameWidthTextinput, "Width of new rules.", true);
 
-            auto *ruleFrameHeight_tinp = intBuilder.withName("ruleFrameHeight_tinp")
+            auto *ruleFrameHeightTextinput = intBuilder.withName("ruleFrameHeightTextinput")
                                              .withCppVal(&this->cppVal_->ruleGridHeight_)
                                              .withAttributes({{"class", val("small_width")}})
                                              .textInput();
 
-            auto *ruleFrameHeight_tinp_lbl =
-                intBuilder.label(ruleFrameHeight_tinp, "Height of new rules.", true);
+            auto *ruleFrameHeightLabel =
+                intBuilder.label(ruleFrameHeightTextinput, "Height of new rules.", true);
 
             textBuilder.br();
 
@@ -280,8 +280,8 @@ class BeakerNode : public HybridNode<B> {
     // this is an easy way to let Beaker see it for now.
 
     ClarityNode *reactionRulesDiv_;
-    ClarityNode *beakerName_tinp_;
-    HybridNode<string> *successorName_tinp_;
+    ClarityNode *beakerNameTextinput_;
+    HybridNode<string> *successorNameTextinput_;
     ClarityNode *priorityTIN_;
     CanvasGrid<unsigned char> *beakerCanvas_;
     // Beaker<unsigned char> *mainBeaker_;
