@@ -93,35 +93,27 @@ class StickWorldNode : public HybridNode<B> {
      *
      */
     inline virtual void refresh() {
-        HybridNode<B>::refresh();
-        // this->swCanvas_->refreshView();
+        HybridNode<B>::refresh();        
     }
 
     inline void tick() {
-        if (this->cppVal_->playMode_ == 0) {
-            // this->playPauseButtonMsg_ = "PAUSE";
+        if (this->cppVal_->playMode_ == 0) {            
             if (this->playPauseButton_ != nullptr) this->playPauseButton_->setDOMVal(val("Play"));
             return;
-        } else {
-            // this->playPauseButtonMsg_ = "PLAY";
+        } else {            
             if (this->playPauseButton_ != nullptr) this->playPauseButton_->setDOMVal(val("Pause"));
         }
 
-        cout << "SWNode TICK TOCK!" << endl;
+        cout << "tick()" << endl;
         this->cppVal_->iterationCount_++;
         int i = this->cppVal_->iterationCount_;
-        // val ctx = swCanvas_->getContext2d();
-        //  ctx.set("fillStyle", val("#ffaa33"));
-        //  ctx.call<void>("fillRect", val(10), val(8), val(10 * i), val(8 * i));
-        // const int xRange, const int yRange, const coordinate length, const ColorRGBA stickColor)
+        
         ColorRGBA stickColor(230, 55, 100, 1);
         Matchstick m = Matchstick::makeRandomStick(this->cppVal_->swCanvasWidth_,
                                                    this->cppVal_->swCanvasHeight_,
                                                    this->cppVal_->lineLength_, stickColor);
-        val ctx = swCanvas_->getContext2d();
-        // ctx.call<void>("save");
-        m.draw(ctx);
-        // ctx.call<void>("restore");
+        val ctx = swCanvas_->getContext2d();        
+        m.draw(ctx);        
     }
 
     inline CanvasElement<int> *getSWCanvas() { return this->swCanvas_; }
@@ -135,22 +127,14 @@ class StickWorldNode : public HybridNode<B> {
      *
      */
     virtual void finalize() {
-        this->nodelog("StickWorldNode::finalize(): ");
-        // val ghostUrl = val::global("ghostUrl");
-        // this->nodelog(clto_str("Ghost Url: ") + ghostUrl.as<string>());
+        this->nodelog("StickWorldNode::finalize(): ");       
 
         this->jsProxyNode_.set("clarityNode", this);
 
         CLNodeFactory<HybridNode, string, int> builder("div", "stickworldDiv");
         CLNodeFactory<HybridNode, string, int> stringBuilder(builder.withChildrenOf(this));
         CLNodeFactory<HybridNode, int, int> intBuilder(builder.withChildrenOf(this));
-        CLNodeFactory<HybridNode, double, double> doubleBuilder(builder.withChildrenOf(this));
-
-        stickworldName_tinp = stringBuilder
-                                  .withName("stickworldName")
-                                  //.withCppVal(&this->cppVal_->name_)
-                                  .withAttributes({{"class", val("medium_width")}})
-                                  .textInput();
+        CLNodeFactory<HybridNode, double, double> doubleBuilder(builder.withChildrenOf(this));        
 
         swCanvas_ = intBuilder.withName("canvas1")
                         .withTag("canvas")
@@ -166,16 +150,12 @@ class StickWorldNode : public HybridNode<B> {
                                     .withHoverText("Line Length")
                                     .withCppVal(&this->cppVal_->lineLength_)
                                     .textInput();
-
-        // val canvasFillcolor = val::global("canvasFillcolor");
-        // val ctx = swCanvas_->getDomElement().call<val>("getContext", val("2d"));
+        
         val ctx = swCanvas_->getContext2d();
-        // ctx.call<void>("save");
+        
         ctx.set("fillStyle", val("#eeeeee"));
         ctx.call<void>("fillRect", val(0), val(0), val(this->cppVal_->getSWCanvasWidth()),
-                       val(this->cppVal_->getSWCanvasHeight()));
-        // fillRect(0, 0, w, h);
-        // ctx.call<void>("restore");
+                       val(this->cppVal_->getSWCanvasHeight()));        
 
         val playPauseClassMap = ClarityNode::JSProxyNode_["playPauseClassMap"];
         NumWrapper<int> toggleWrapper(&this->cppVal_->playMode_, 2);
@@ -184,16 +164,8 @@ class StickWorldNode : public HybridNode<B> {
                 .withClass("small_width")
                 .cycleButton<NumWrapper<int>>("--", toggleWrapper, playPauseClassMap);
 
-        val::global("setTickerSWNode")(*this);
-
-        // auto playPauseButtonStateFn = [this](HybridNode<string> *hn, string *v) {};
-        //  swCanvas_->runDrawFunction();
-    }
-
-    // inline virtual void doNothing() {
-    //     cout << "This method exists so that Embind will create a type when this method in bound."
-    //          << endl;
-    // }
+        val::global("setTickerSWNode")(*this);        
+    }    
 
    public:
     // FIXME: Would be nice to keep these members protected or private but
@@ -203,9 +175,7 @@ class StickWorldNode : public HybridNode<B> {
     CanvasElement<int> *swCanvas_;
     ClarityNode *stickworldName_tinp;
     HybridNode<string> *playPauseButton_;
-    val context2d_;
-    //string playPauseButtonMsg_ = "Play";
-    // ClarityNode *swCanvas_;
+    val context2d_;    
 };
 
 /**
