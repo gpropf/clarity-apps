@@ -426,9 +426,9 @@ class Beaker {
             px += mx;
             py += my;
             this->beakerNode_->beakerCanvas_->wrapCoordiates(px, py);
-            auto linearGridAddress = linearizeGridCoordinates(px, py);
+            //auto linearGridAddress = linearizeGridCoordinates(px, py);
             valuePriorityPairT vp = pair(value, reactionRule.successionPriority_);
-            cout << "Linear address for push_back is " << linearGridAddress << endl;
+            //cout << "Linear address for push_back is " << linearGridAddress << endl;
             successionMap_[pair(px,py)].push_back(vp);
             //successionGrid_[linearGridAddress].push_back(vp);
             c++;
@@ -470,12 +470,13 @@ class Beaker {
         for (gridCoordinateT j = 0; j < gridHeight_; j++) {
             string vals = "";
             for (gridCoordinateT i = 0; i < gridWidth_; i++) {
-                if (reactionRules_.size() > 0) {
-                    bool matches = matchesAt(*reactionRules_[0], pair(i, j));
+                for (auto reactionRule: reactionRules_) {
+
+                    bool matches = matchesAt(*reactionRule, pair(i, j));
                     if (matches) {
                         beakerNode_->nodelog("Match at " + clto_str(i) + "," + clto_str(j));
-                        laydownMatchPixels(reactionRules_[0]->successor_->newPixelList_, pair(i, j),
-                                           *reactionRules_[0]);
+                        laydownMatchPixels(reactionRule->successor_->newPixelList_, pair(i, j),
+                                           *reactionRule);
                     }
                 }
 
