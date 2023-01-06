@@ -167,10 +167,10 @@ class BeakerNode : public HybridNode<B> {
         } else {
             // mainBeaker_ = this->cppVal_;
 
-            val makeNewReactionRule_el =
+            val makeNewReactionRuleEL =
                 val::global("elgMakeNewReactionRuleButtonClicked")(this->cppVal_);
 
-            val iterate_el = val::global("elgBeakerIterate")(this->cppVal_);
+            val iterateEL = val::global("elgBeakerIterate")(this->cppVal_);
             // Uncomment these two lines to re-activate beaker auto-iteration.
             // val beakerIterate = val::global("beakerIterate")(this->cppVal_);
             // val::global().call<void>("setInterval", beakerIterate, 500);
@@ -236,18 +236,18 @@ class BeakerNode : public HybridNode<B> {
 
             textBuilder.br();
 
-            val beakerIterate_el =
+            val beakerIterateEL =
                 val::global("Util")["callMethodByName"](this->cppVal_, val("iterate"), val(true));
             auto *iterate_btn =
-                intBuilder.button("iterate_btn", "Iterate the reaction", beakerIterate_el);
+                intBuilder.button("iterate_btn", "Iterate the reaction", beakerIterateEL);
 
-            val makePixelList_el = val::global("Util")["callMethodByName"](
+            val makePixelListEL = val::global("Util")["callMethodByName"](
                 this->cppVal_, val("makePixelList"), val(true));
             auto *makePixelList_btn =
-                intBuilder.button("makePixelList_btn", "Make pixel list", makePixelList_el);
+                intBuilder.button("makePixelList_btn", "Make pixel list", makePixelListEL);
 
             auto *newReactionRule_btn = intBuilder.button(
-                "newReactionRule_btn", "Make reaction rule", makeNewReactionRule_el);
+                "newReactionRule_btn", "Make reaction rule", makeNewReactionRuleEL);
 
             textBuilder.br();
 
