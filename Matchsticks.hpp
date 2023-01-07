@@ -92,28 +92,26 @@ class StickWorldNode : public HybridNode<B> {
      * updated when the object state changes.
      *
      */
-    inline virtual void refresh() {
-        HybridNode<B>::refresh();        
-    }
+    inline virtual void refresh() { HybridNode<B>::refresh(); }
 
-    inline void tick() {
-        if (this->cppVal_->playMode_ == 0) {            
+    inline void iterate() {
+        if (this->cppVal_->playMode_ == 0) {
             if (this->playPauseButton_ != nullptr) this->playPauseButton_->setDOMVal(val("Play"));
             return;
-        } else {            
+        } else {
             if (this->playPauseButton_ != nullptr) this->playPauseButton_->setDOMVal(val("Pause"));
         }
 
-        cout << "tick()" << endl;
+        cout << "iterate()" << endl;
         this->cppVal_->iterationCount_++;
         int i = this->cppVal_->iterationCount_;
-        
+
         ColorRGBA stickColor(230, 55, 100, 1);
         Matchstick m = Matchstick::makeRandomStick(this->cppVal_->swCanvasWidth_,
                                                    this->cppVal_->swCanvasHeight_,
                                                    this->cppVal_->lineLength_, stickColor);
-        val ctx = swCanvas_->getContext2d();        
-        m.draw(ctx);        
+        val ctx = swCanvas_->getContext2d();
+        m.draw(ctx);
     }
 
     inline CanvasElement<int> *getSWCanvas() { return this->swCanvas_; }
@@ -127,14 +125,14 @@ class StickWorldNode : public HybridNode<B> {
      *
      */
     virtual void finalize() {
-        this->nodelog("StickWorldNode::finalize(): ");       
+        this->nodelog("StickWorldNode::finalize(): ");
 
         this->jsProxyNode_.set("clarityNode", this);
 
         CLNodeFactory<HybridNode, string, int> builder("div", "stickworldDiv");
         CLNodeFactory<HybridNode, string, int> stringBuilder(builder.withChildrenOf(this));
         CLNodeFactory<HybridNode, int, int> intBuilder(builder.withChildrenOf(this));
-        CLNodeFactory<HybridNode, double, double> doubleBuilder(builder.withChildrenOf(this));        
+        CLNodeFactory<HybridNode, double, double> doubleBuilder(builder.withChildrenOf(this));
 
         swCanvas_ = intBuilder.withName("canvas1")
                         .withTag("canvas")
@@ -150,12 +148,12 @@ class StickWorldNode : public HybridNode<B> {
                                     .withHoverText("Line Length")
                                     .withCppVal(&this->cppVal_->lineLength_)
                                     .textInput();
-        
+
         val ctx = swCanvas_->getContext2d();
-        
+
         ctx.set("fillStyle", val("#eeeeee"));
         ctx.call<void>("fillRect", val(0), val(0), val(this->cppVal_->getSWCanvasWidth()),
-                       val(this->cppVal_->getSWCanvasHeight()));        
+                       val(this->cppVal_->getSWCanvasHeight()));
 
         val playPauseClassMap = ClarityNode::JSProxyNode_["playPauseClassMap"];
         NumWrapper<int> toggleWrapper(&this->cppVal_->playMode_, 2);
@@ -164,8 +162,16 @@ class StickWorldNode : public HybridNode<B> {
                 .withClass("small_width")
                 .cycleButton<NumWrapper<int>>("--", toggleWrapper, playPauseClassMap);
 
-        val::global("setTickerSWNode")(*this);        
-    }    
+        val Util = val::global("Util");
+        val timerId = Util["setIntervalForObjectWithNamedMethod"](*this, val("iterate"), 75);
+        cout << "Timer id: " << timerId.as<int>() << endl;
+        //val tickJS =
+        //        val::global("Util")["callMethodByName"](this, val("tick"));
+
+        // auto ticker = []() {} ;
+
+        // EM_ASM({setInterval(() => {$0}, 100);}, *ticker);
+    }
 
    public:
     // FIXME: Would be nice to keep these members protected or private but
@@ -175,7 +181,7 @@ class StickWorldNode : public HybridNode<B> {
     CanvasElement<int> *swCanvas_;
     ClarityNode *stickworldName_tinp;
     HybridNode<string> *playPauseButton_;
-    val context2d_;    
+    val context2d_;
 };
 
 /**
@@ -218,7 +224,7 @@ EMSCRIPTEN_BINDINGS(Matchsticks) {
     //     allow_raw_pointers());
 
     class_<StickWorldNode<StickWorld>>("StickWorldNode")
-        .function("tick", &StickWorldNode<StickWorld>::tick, allow_raw_pointers());
+        .function("iterate", &StickWorldNode<StickWorld>::iterate, allow_raw_pointers());
     // .function("doNothing", &StickWorldNode<StickWorld>::doNothing,
     //           allow_raw_pointers());
 
