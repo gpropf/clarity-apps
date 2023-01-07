@@ -72,11 +72,11 @@ struct Matchstick {
  * @brief This is the complex control that allows the user to edit and run the StickWorld. Probably
  * a good thing to copy if you're planning to make your own complex controls.
  *
- * @tparam V This 'V' is actually the StickWorld objects themselves. So the `cppVal_` member of this
+ * @tparam SW This 'SW' is actually a Stickworld object. So the `cppVal_` member of this
  * kind of node points to a StickWorld.
  */
-template <class B>
-class StickWorldNode : public HybridNode<B> {
+template <class SW>
+class StickWorldNode : public HybridNode<SW> {
    private:
     // ClarityNode *iterationCounter_;
 
@@ -84,7 +84,7 @@ class StickWorldNode : public HybridNode<B> {
     StickWorldNode(const string &name, const string &tag, bool useExistingDOMElement,
                    ClarityNode::AttachmentMode attachmentMode = ClarityNode::AttachmentMode::NEW,
                    const string &attachmentId = "")
-        : HybridNode<B>(name, tag, useExistingDOMElement, attachmentMode, attachmentId) {}
+        : HybridNode<SW>(name, tag, useExistingDOMElement, attachmentMode, attachmentId) {}
 
     /**
      * @brief In any node representing a complex object a call to HybridNode::refresh() is mandatory
@@ -92,7 +92,7 @@ class StickWorldNode : public HybridNode<B> {
      * updated when the object state changes.
      *
      */
-    inline virtual void refresh() { HybridNode<B>::refresh(); }
+    inline virtual void refresh() { HybridNode<SW>::refresh(); }
 
     inline void iterate() {
         if (this->cppVal_->playMode_ == 0) {
@@ -141,6 +141,8 @@ class StickWorldNode : public HybridNode<B> {
                                          {"height", val(this->cppVal_->swCanvasHeight_)}})
                         .canvasElement();
 
+        stringBuilder.br();
+
         context2d_ = swCanvas_->getContext2d();
 
         auto *lineLength_tinp = doubleBuilder.withName("lineLength_tinp")
@@ -165,12 +167,7 @@ class StickWorldNode : public HybridNode<B> {
         val Util = val::global("Util");
         val timerId = Util["setIntervalForObjectWithNamedMethod"](*this, val("iterate"), 75);
         cout << "Timer id: " << timerId.as<int>() << endl;
-        //val tickJS =
-        //        val::global("Util")["callMethodByName"](this, val("tick"));
-
-        // auto ticker = []() {} ;
-
-        // EM_ASM({setInterval(() => {$0}, 100);}, *ticker);
+        
     }
 
    public:
@@ -183,16 +180,6 @@ class StickWorldNode : public HybridNode<B> {
     HybridNode<string> *playPauseButton_;
     val context2d_;
 };
-
-/**
- * @brief Represents a single "reaction vessel" in which our experiments can take place. The
- * reaction rules that determine how patterns in the canvas transform will use the same CanvasGrid
- * control the stickWorld itself does.
- *
- * @tparam V This is the type we are using for the canvas elements. The original app I wrote in
- * ClojureScript used small positive integers for the colors so the expected type here is `unsigned
- * char`. Theoretically, it's possible to use other types though.
- */
 
 class StickWorld {
    public:
@@ -218,29 +205,15 @@ class StickWorld {
     friend class StickWorldNode<StickWorld>;
 };
 
-EMSCRIPTEN_BINDINGS(Matchsticks) {
-    // class_<HybridNode<StickWorld>>("HybridNode_h")
-    //     .function("doNothing", &HybridNode<StickWorld>::doNothing,
-    //     allow_raw_pointers());
-
+EMSCRIPTEN_BINDINGS(Matchsticks) {   
     class_<StickWorldNode<StickWorld>>("StickWorldNode")
-        .function("iterate", &StickWorldNode<StickWorld>::iterate, allow_raw_pointers());
-    // .function("doNothing", &StickWorldNode<StickWorld>::doNothing,
-    //           allow_raw_pointers());
-
-    class_<StickWorld>("StickWorld");  //.function("tick", &StickWorld::tick, allow_raw_pointers());
-
-    class_<CanvasElement<int>>("CanvasElement_i");
-    //    .function("runDrawFunction", &CanvasElement<int>::runDrawFunction, allow_raw_pointers());
-    // .function("iterate", &StickWorld::iterate, allow_raw_pointers())
-    // .function("makeNewReactionRule", &StickWorld::makeNewReactionRule,
-    //           allow_raw_pointers());
-    // .class_function("makeNewReactionRule_st", &StickWorld::makeNewReactionRule_st,
-    //                 allow_raw_pointers());
+        .function("iterate", &StickWorldNode<StickWorld>::iterate, allow_raw_pointers());    
+    class_<StickWorld>("StickWorld");
+    class_<CanvasElement<int>>("CanvasElement_i");   
 }
 
 /**
- * @brief The Pixelreactor app from the old ClojureScript site redone in C++.
+ * @brief The Matchsticks app from the old ClojureScript site redone in C++.
  *
  */
 struct Matchsticks : public PageContent {

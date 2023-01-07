@@ -1,7 +1,6 @@
-// This is an example of an add-on JavaScript script or library that can
-// be initialized along with the rest of Clarity.
 
-console.log("clapps-aux.js loaded!");
+
+//console.log("clapps-aux.js loaded!");
 
 /**
  * Probably could use support for the actual event instead of just throwing it away.
@@ -47,12 +46,12 @@ function colorChange_el(ev) {
     console.log("colorChange_el()");
 }
 
-function setTicker(stickWorld) {
-    setInterval(() => {stickWorld.tick()}, 500);
-}
+// function setTicker(stickWorld) {
+//     setInterval(() => {stickWorld.tick()}, 500);
+// }
 
-function setTickerSWNode(stickWorldNode) {
-    setInterval(() => {stickWorldNode.tick()}, 100);
-}
+// function setTickerSWNode(stickWorldNode) {
+//     setInterval(() => {stickWorldNode.tick()}, 100);
+// }
 
 
