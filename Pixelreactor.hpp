@@ -244,10 +244,10 @@ class BeakerNode : public HybridNode<B> {
             auto *iterate_btn =
                 intBuilder.button("iterate_btn", "Iterate the reaction", beakerIterateEL);
 
-            val makePixelListEL = val::global("Util")["callMethodByName"](
-                this->cppVal_, val("makePixelList"), val(true));
+            val clearGridEL = val::global("Util")["callMethodByName"](
+                this->cppVal_, val("clearGrid"), val(true));
             auto *makePixelList_btn =
-                intBuilder.button("makePixelList_btn", "Make pixel list", makePixelListEL);
+                intBuilder.button("makePixelList_btn", "Clear Grid", clearGridEL);
 
             auto *newReactionRule_btn = intBuilder.button(
                 "newReactionRule_btn", "Make reaction rule", makeNewReactionRuleEL);
@@ -420,6 +420,11 @@ class Beaker {
         return (y * gridWidth_ + x);
     }
 
+    void clearGrid() {
+        cout << "clearGrid()" << endl;
+        this->beakerNode_->beakerCanvas_->clearGridToValue(0);
+    }
+
     void laydownMatchPixels(vector<gridCoordinatesValueTripletT> &rulePixelList,
                             gridCoordinatePairT matchCoordiates, Beaker<V> &reactionRule) {
         auto [mx, my] = matchCoordiates;
@@ -428,8 +433,8 @@ class Beaker {
             auto [gridCoords, value] = pixel;
             int px = gridCoords.first;
             int py = gridCoords.second;
-            px += mx;
-            py += my;
+            px += mx + reactionRule.successorOffsetX_;
+            py += my + reactionRule.successorOffsetY_;
             this->beakerNode_->beakerCanvas_->wrapCoordiates(px, py);
             // auto linearGridAddress = linearizeGridCoordinates(px, py);
             valuePriorityPairT vp = pair(value, reactionRule.successionPriority_);
@@ -440,16 +445,23 @@ class Beaker {
         }
         cout << "Done laying down " << c << " match pixels for rule: " << reactionRule.name_
              << endl;
+
+        // std::cout << key << " has value " << value << std::endl;
+        // std::cout << it->first << " => " << it->second << '\n';
+    }
+
+    void updateGrid() {
+        clean_ = false;
         for (const auto &[key, value] : this->successionMap_) {
             auto [px, py] = key;
             vector<valuePriorityPairT> vpStack = value;
-            cout << "coordinate: " << px << ", " << py << endl;
-            for (auto [val, pri] : vpStack) {
-                cout << "\tval = " << int(val) << ", pri = " << pri << endl;
+            cout << "update coordinate: " << px << ", " << py << endl;
+            if (!vpStack.empty()) {
+                auto [val, pri] = vpStack.back();
+                this->beakerNode_->beakerCanvas_->setValXYNoDraw(px, py, val);
             }
+            // vpStack.pop
         }
-        // std::cout << key << " has value " << value << std::endl;
-        // std::cout << it->first << " => " << it->second << '\n';
     }
 
     bool toggleClean() {
@@ -477,6 +489,7 @@ class Beaker {
         this->newPixelList_.clear();
         this->backgroundPixelList_.clear();
         makePixelList();
+        clean_ = true;
     }
 
     /**
@@ -489,34 +502,48 @@ class Beaker {
         this->iterationCount_++;
 
         for (gridCoordinateT j = 0; j < gridHeight_; j++) {
-            string vals = "";
+            //string vals = "";
             for (gridCoordinateT i = 0; i < gridWidth_; i++) {
                 for (auto reactionRule : reactionRules_) {
+                    if (reactionRule->successor_ == reactionRule) continue;
                     bool matches = matchesAt(*reactionRule, pair(i, j));
                     if (matches) {
                         beakerNode_->nodelog("Match at " + clto_str(i) + "," + clto_str(j));
                         laydownMatchPixels(reactionRule->successor_->newPixelList_, pair(i, j),
                                            *reactionRule);
+                        laydownMatchPixels(reactionRule->successor_->backgroundPixelList_, pair(i, j),
+                                           *reactionRule);
                     }
                 }
 
-                V xyVal = this->beakerNode_->beakerCanvas_->getValXY(i, j);
+                // V xyVal = this->beakerNode_->beakerCanvas_->getValXY(i, j);
 
-                if (xyVal != 0) {
-                    this->beakerNode_->beakerCanvas_->setValXYNoDraw(i, j, xyVal - 1);
-                }
+                // if (xyVal != 0) {
+                //     this->beakerNode_->beakerCanvas_->setValXYNoDraw(i, j, xyVal - 1);
+                // }
                 // vals = "x: " + clto_str(i) + ", y: " + clto_str(j) + " = " + clto_str(int(xyVal))
                 // + "\n";
-                vals += clto_str(int(xyVal)) + " ";
+                // vals += clto_str(int(xyVal)) + " ";
             }
-            cout << vals << endl;
-            // this->beakerNode_->nodelog(vals);
-            //  cellCount++;
+            // cout << vals << endl;
+            //  this->beakerNode_->nodelog(vals);
+            //   cellCount++;
         }
         // this->beakerNode_->beakerCanvas_->drawGrid();
         // this->beakerNode_->beakerCanvas_->drawGrid();
         this->beakerNode_->refresh();
         this->printRuleStats();
+
+        for (const auto &[key, value] : this->successionMap_) {
+            auto [px, py] = key;
+            vector<valuePriorityPairT> vpStack = value;
+            cout << "coordinate: " << px << ", " << py << endl;
+            for (auto [val, pri] : vpStack) {
+                cout << "\tval = " << int(val) << ", pri = " << pri << endl;
+            }
+        }
+        updateGrid();
+        this->beakerNode_->beakerCanvas_->drawGrid();
     }
 
     static void makeNewReactionRule_st(Beaker *b) { b->makeNewReactionRule(); }
@@ -582,6 +609,7 @@ EMSCRIPTEN_BINDINGS(PixelReactor) {
 
     class_<Beaker<unsigned char>>("Beaker")
         .function("toggleClean", &Beaker<unsigned char>::toggleClean, allow_raw_pointers())
+        .function("clearGrid", &Beaker<unsigned char>::clearGrid, allow_raw_pointers())
         .function("makeDirty", &Beaker<unsigned char>::makeDirty, allow_raw_pointers())
         .function("iterate", &Beaker<unsigned char>::iterate, allow_raw_pointers())
         .function("makePixelList", &Beaker<unsigned char>::makePixelList, allow_raw_pointers())
