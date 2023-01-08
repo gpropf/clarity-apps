@@ -46,12 +46,18 @@ function colorChange_el(ev) {
     console.log("colorChange_el()");
 }
 
-// function setTicker(stickWorld) {
-//     setInterval(() => {stickWorld.tick()}, 500);
-// }
+function elgToggleBeakerClean(beaker) {
+    return function (e) {
+        console.log("BEAKER CLICKED!")
+        beaker.toggleClean();
+    }
+}
 
-// function setTickerSWNode(stickWorldNode) {
-//     setInterval(() => {stickWorldNode.tick()}, 100);
-// }
+function elgMakeBeakerDirty(beaker) {
+    return function (e) {
+        console.log("BEAKER CLICKED!")
+        beaker.makeDirty();
+    }
+}
 
 
