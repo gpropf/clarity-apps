@@ -13,23 +13,24 @@ typedef pair<double, double> coordinatePair;
 typedef double coordinate;
 
 struct ColorRGBA {
-    unsigned char r_, g_, b_, a_;
-    ColorRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+    unsigned char r_, g_, b_;
+    double a_;
+    ColorRGBA(unsigned char r, unsigned char g, unsigned char b, double a)
         : r_(r), g_(g), b_(b), a_(a) {}
     string toString() {
         return "rgba(" + clto_str(int(r_)) + "," + clto_str(int(g_)) + "," + clto_str(int(b_)) +
-               "," + clto_str(int(a_)) + ")";
+               "," + clto_str(a_) + ")";
     }
 
     ColorRGBA(string sextuplet) {
-        //int r,g,b;
-        string rhex = "0x" + sextuplet.substr(0,2);
-        string ghex = "0x" + sextuplet.substr(2,2);
-        string bhex = "0x" + sextuplet.substr(4,2);        
+        // int r,g,b;
+        string rhex = "0x" + sextuplet.substr(0, 2);
+        string ghex = "0x" + sextuplet.substr(2, 2);
+        string bhex = "0x" + sextuplet.substr(4, 2);
         r_ = stoi(rhex, 0, 16);
         g_ = stoi(ghex, 0, 16);
-        b_ = stoi(bhex, 0, 16);        
-        a_ = 255;
+        b_ = stoi(bhex, 0, 16);
+        a_ = 1.0;
     }
 };
 
@@ -48,7 +49,7 @@ struct Matchstick {
           lineWidth_(lineWidth) {}
 
     static Matchstick makeRandomStick(int xRange, int yRange, coordinate length,
-                                      ColorRGBA &stickColor) {
+                                      ColorRGBA &stickColor, int stickWidth = 1) {
         coordinate x = rand() % xRange;
         coordinate y = rand() % yRange;
         double angle = (rand() % 360) / (2 * M_PI);
@@ -57,10 +58,10 @@ struct Matchstick {
         coordinatePair fromPoint = pair(x, y);
         coordinatePair toPoint = pair(xto, yto);
         ColorRGBA blueGreen(50, 200, 220, 1);
-        if (rand() % 10 == 0)
-            return Matchstick(fromPoint, toPoint, blueGreen, 4);
-        else
-            return Matchstick(fromPoint, toPoint, stickColor, 1);
+        // if (rand() % 10 == 0)
+        // return Matchstick(fromPoint, toPoint, blueGreen, 4);
+        // else
+        return Matchstick(fromPoint, toPoint, stickColor, stickWidth);
     }
 
     void draw(val ctx) {
@@ -117,11 +118,11 @@ class StickWorldNode : public HybridNode<SW> {
         this->cppVal_->iterationCount_++;
         int i = this->cppVal_->iterationCount_;
 
-        //ColorRGBA stickColor(230, 55, 100, 1);
+        // ColorRGBA stickColor(230, 55, 100, 1);
         ColorRGBA stickColor(this->cppVal_->lineColorString_);
         Matchstick m = Matchstick::makeRandomStick(this->cppVal_->swCanvasWidth_,
                                                    this->cppVal_->swCanvasHeight_,
-                                                   this->cppVal_->lineLength_, stickColor);
+                                                   this->cppVal_->lineLength_, stickColor, this->cppVal_->lineWidth_);
         val ctx = swCanvas_->getContext2d();
         m.draw(ctx);
     }
@@ -164,12 +165,26 @@ class StickWorldNode : public HybridNode<SW> {
                                     .withCppVal(&this->cppVal_->lineLength_)
                                     .textInput();
 
+        stringBuilder.labelGivenNode(lineLength_tinp, "Line Length");
+
+
+        auto *lineWidthTextInput_ = intBuilder.withName("lineWidthTextInput_")
+                                        .withLabelText("Line width (integer)")
+                                        .withHoverText("Line width (integer)")
+                                        .withClass("medium_width")
+                                        .withCppVal(&this->cppVal_->lineWidth_)
+                                        .textInput();
+
+        stringBuilder.labelGivenNode(lineWidthTextInput_, "Line width (integer)");
+
         auto *lineColorTextInput_ = stringBuilder.withName("lineColorTextInput_")
                                         .withLabelText("Line color string")
                                         .withHoverText("Line color string")
                                         .withClass("medium_width")
                                         .withCppVal(&this->cppVal_->lineColorString_)
                                         .textInput();
+
+        stringBuilder.labelGivenNode(lineColorTextInput_, "Line Color String");
 
         val ctx = swCanvas_->getContext2d();
 
@@ -216,6 +231,7 @@ class StickWorld {
     int playMode_ = 0;
 
     double lineLength_ = 50;
+    int lineWidth_ = 1;
     string lineColorString_ = "f045a0";
 
     StickWorldNode<StickWorld>
