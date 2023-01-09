@@ -20,6 +20,17 @@ struct ColorRGBA {
         return "rgba(" + clto_str(int(r_)) + "," + clto_str(int(g_)) + "," + clto_str(int(b_)) +
                "," + clto_str(int(a_)) + ")";
     }
+
+    ColorRGBA(string sextuplet) {
+        //int r,g,b;
+        string rhex = "0x" + sextuplet.substr(0,2);
+        string ghex = "0x" + sextuplet.substr(2,2);
+        string bhex = "0x" + sextuplet.substr(4,2);        
+        r_ = stoi(rhex, 0, 16);
+        g_ = stoi(ghex, 0, 16);
+        b_ = stoi(bhex, 0, 16);        
+        a_ = 255;
+    }
 };
 
 struct Matchstick {
@@ -106,7 +117,8 @@ class StickWorldNode : public HybridNode<SW> {
         this->cppVal_->iterationCount_++;
         int i = this->cppVal_->iterationCount_;
 
-        ColorRGBA stickColor(230, 55, 100, 1);
+        //ColorRGBA stickColor(230, 55, 100, 1);
+        ColorRGBA stickColor(this->cppVal_->lineColorString_);
         Matchstick m = Matchstick::makeRandomStick(this->cppVal_->swCanvasWidth_,
                                                    this->cppVal_->swCanvasHeight_,
                                                    this->cppVal_->lineLength_, stickColor);
@@ -148,8 +160,16 @@ class StickWorldNode : public HybridNode<SW> {
         auto *lineLength_tinp = doubleBuilder.withName("lineLength_tinp")
                                     .withLabelText("Line Length")
                                     .withHoverText("Line Length")
+                                    .withClass("small_width")
                                     .withCppVal(&this->cppVal_->lineLength_)
                                     .textInput();
+
+        auto *lineColorTextInput_ = stringBuilder.withName("lineColorTextInput_")
+                                        .withLabelText("Line color string")
+                                        .withHoverText("Line color string")
+                                        .withClass("medium_width")
+                                        .withCppVal(&this->cppVal_->lineColorString_)
+                                        .textInput();
 
         val ctx = swCanvas_->getContext2d();
 
@@ -167,7 +187,6 @@ class StickWorldNode : public HybridNode<SW> {
         val Util = val::global("Util");
         val timerId = Util["setIntervalForObjectWithNamedMethod"](*this, val("iterate"), 75);
         cout << "Timer id: " << timerId.as<int>() << endl;
-        
     }
 
    public:
@@ -197,6 +216,7 @@ class StickWorld {
     int playMode_ = 0;
 
     double lineLength_ = 50;
+    string lineColorString_ = "f045a0";
 
     StickWorldNode<StickWorld>
         *stickWorldNode_;  //!< Pointer back to containing SWN so that SWN->refresh()
@@ -205,11 +225,11 @@ class StickWorld {
     friend class StickWorldNode<StickWorld>;
 };
 
-EMSCRIPTEN_BINDINGS(Matchsticks) {   
+EMSCRIPTEN_BINDINGS(Matchsticks) {
     class_<StickWorldNode<StickWorld>>("StickWorldNode")
-        .function("iterate", &StickWorldNode<StickWorld>::iterate, allow_raw_pointers());    
+        .function("iterate", &StickWorldNode<StickWorld>::iterate, allow_raw_pointers());
     class_<StickWorld>("StickWorld");
-    class_<CanvasElement<int>>("CanvasElement_i");   
+    class_<CanvasElement<int>>("CanvasElement_i");
 }
 
 /**
