@@ -9,6 +9,21 @@
 
 using namespace clarity;
 
+template <typename V>
+struct RotationMatrix2D {
+    V r1c1_, r1c2_, r2c1_, r2c2_;
+
+    RotationMatrix2D(V r1c1, V r1c2, V r2c1, V r2c2): r1c1_(r1c1), r1c2_(r1c2), r2c1_(r2c1), r2c2_(r2c2) {}
+
+    pair<V,V> rotateCoordinates(pair<V,V> coords) {
+        auto [x,y] = coords;
+        V xprime = r1c1_ * x + r1c2_ * y;
+        V yprime = r2c1_ * x + r2c2_ * y;
+        return pair(xprime,yprime);
+    }
+};
+
+
 template <typename U>
 class Beaker;
 
@@ -353,13 +368,18 @@ class Beaker {
     }
 
     vector<gridCoordinatesValueTripletT> makePixelList() {
+        RotationMatrix2D r90(0,-1,1,0);
         vector<gridCoordinatesValueTripletT> pixels;
         for (gridCoordinateT i = 0; i < this->gridWidth_; i++) {
             for (gridCoordinateT j = 0; j < this->gridHeight_; j++) {
                 V pixelVal = this->beakerNode_->beakerCanvas_->getValXY(i, j);
+                
                 gridCoordinatePairT xy = pair(i, j);
+                auto xyPrime = r90.rotateCoordinates(xy);
+                
                 gridCoordinatesValueTripletT xyv = pair(xy, pixelVal);
                 if (pixelVal != 0) {
+                    cout << "Pixel: " << i << ", " << j << "; Rotated pixel: "  << xyPrime.first << ", " << xyPrime.second << endl;
                     this->newPixelList_.push_back(xyv);
                 } else {
                     this->backgroundPixelList_.push_back(xyv);
@@ -593,6 +613,9 @@ class Beaker {
 
     vector<gridCoordinatesValueTripletT> newPixelList_;
     vector<gridCoordinatesValueTripletT> backgroundPixelList_;
+
+
+
 
     // template <typename U>
     friend class BeakerNode<Beaker<V>>;
