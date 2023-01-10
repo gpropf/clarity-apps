@@ -13,16 +13,16 @@ template <typename V>
 struct RotationMatrix2D {
     V r1c1_, r1c2_, r2c1_, r2c2_;
 
-    RotationMatrix2D(V r1c1, V r1c2, V r2c1, V r2c2): r1c1_(r1c1), r1c2_(r1c2), r2c1_(r2c1), r2c2_(r2c2) {}
+    RotationMatrix2D(V r1c1, V r1c2, V r2c1, V r2c2)
+        : r1c1_(r1c1), r1c2_(r1c2), r2c1_(r2c1), r2c2_(r2c2) {}
 
-    pair<V,V> rotateCoordinates(pair<V,V> coords) {
-        auto [x,y] = coords;
+    pair<V, V> rotateCoordinates(pair<V, V> coords) {
+        auto [x, y] = coords;
         V xprime = r1c1_ * x + r1c2_ * y;
         V yprime = r2c1_ * x + r2c2_ * y;
-        return pair(xprime,yprime);
+        return pair(xprime, yprime);
     }
 };
-
 
 template <typename U>
 class Beaker;
@@ -106,9 +106,9 @@ class BeakerNode : public HybridNode<B> {
 
         if (this->cppVal_->isReactionRule_) {
             priorityTextInput_ = intBuilder.withName("priority")
-                               .withCppVal(&this->cppVal_->successionPriority_)
-                               .withAttributes({{"class", val("small_width")}})
-                               .textInput();
+                                     .withCppVal(&this->cppVal_->successionPriority_)
+                                     .withAttributes({{"class", val("small_width")}})
+                                     .textInput();
 
             stringBuilder.withHoverText("Rule priority; lower numbers are higher priority")
                 .labelGivenNode(priorityTextInput_, "Rule priority");
@@ -259,8 +259,8 @@ class BeakerNode : public HybridNode<B> {
             auto *iterate_btn =
                 intBuilder.button("iterate_btn", "Iterate the reaction", beakerIterateEL);
 
-            val clearGridEL = val::global("Util")["callMethodByName"](
-                this->cppVal_, val("clearGrid"), val(true));
+            val clearGridEL =
+                val::global("Util")["callMethodByName"](this->cppVal_, val("clearGrid"), val(true));
             auto *makePixelList_btn =
                 intBuilder.button("makePixelList_btn", "Clear Grid", clearGridEL);
 
@@ -321,7 +321,7 @@ class Beaker {
         priorityT;  // I'm using an int type for the text input field for priorities because the
                     // values weren't "sticking" otherwise. This is a type related bug.
     typedef pair<V, priorityT> valuePriorityPairT;
-    typedef unsigned short int gridCoordinateT;
+    typedef int gridCoordinateT;
     typedef pair<gridCoordinateT, gridCoordinateT> gridCoordinatePairT;
     typedef pair<gridCoordinatePairT, V> gridCoordinatesValueTripletT;
     // typedef
@@ -368,18 +368,33 @@ class Beaker {
     }
 
     vector<gridCoordinatesValueTripletT> makePixelList() {
-        RotationMatrix2D r90(0,-1,1,0);
+        RotationMatrix2D r90(0, -1, 1, 0);
+        RotationMatrix2D r0(1,0,0,1);
         vector<gridCoordinatesValueTripletT> pixels;
         for (gridCoordinateT i = 0; i < this->gridWidth_; i++) {
             for (gridCoordinateT j = 0; j < this->gridHeight_; j++) {
                 V pixelVal = this->beakerNode_->beakerCanvas_->getValXY(i, j);
-                
+
                 gridCoordinatePairT xy = pair(i, j);
-                auto xyPrime = r90.rotateCoordinates(xy);
-                
-                gridCoordinatesValueTripletT xyv = pair(xy, pixelVal);
+                gridCoordinatesValueTripletT xyv;
+                pair<gridCoordinateT,gridCoordinateT> xyPrime;
+                if (this->isReactionRule_) {
+                    xyPrime = r90.rotateCoordinates(xy);
+                    //cout << "makePixelList(): Rotated pixel: " << xyPrime.first << ", " << xyPrime.second << endl;
+                    
+                }
+
+                else {
+                    xyPrime = r0.rotateCoordinates(xy);
+                    //cout << "makePixelList(): Pixel: " << i << ", " << j << endl;
+                    
+                }
+                xyv = pair(xyPrime, pixelVal);
+
                 if (pixelVal != 0) {
-                    cout << "Pixel: " << i << ", " << j << "; Rotated pixel: "  << xyPrime.first << ", " << xyPrime.second << endl;
+                    // cout << "Pixel: " << i << ", " << j << "; Rotated pixel: " << xyPrime.first
+                    //      << ", " << xyPrime.second << endl;
+                    cout << "makePixelList(): NBP: " << xyPrime.first << ", " << xyPrime.second << endl;
                     this->newPixelList_.push_back(xyv);
                 } else {
                     this->backgroundPixelList_.push_back(xyv);
@@ -522,7 +537,7 @@ class Beaker {
         this->iterationCount_++;
 
         for (gridCoordinateT j = 0; j < gridHeight_; j++) {
-            //string vals = "";
+            // string vals = "";
             for (gridCoordinateT i = 0; i < gridWidth_; i++) {
                 for (auto reactionRule : reactionRules_) {
                     if (reactionRule->successor_ == reactionRule) continue;
@@ -531,23 +546,11 @@ class Beaker {
                         beakerNode_->nodelog("Match at " + clto_str(i) + "," + clto_str(j));
                         laydownMatchPixels(reactionRule->successor_->newPixelList_, pair(i, j),
                                            *reactionRule);
-                        laydownMatchPixels(reactionRule->successor_->backgroundPixelList_, pair(i, j),
-                                           *reactionRule);
+                        laydownMatchPixels(reactionRule->successor_->backgroundPixelList_,
+                                           pair(i, j), *reactionRule);
                     }
-                }
-
-                // V xyVal = this->beakerNode_->beakerCanvas_->getValXY(i, j);
-
-                // if (xyVal != 0) {
-                //     this->beakerNode_->beakerCanvas_->setValXYNoDraw(i, j, xyVal - 1);
-                // }
-                // vals = "x: " + clto_str(i) + ", y: " + clto_str(j) + " = " + clto_str(int(xyVal))
-                // + "\n";
-                // vals += clto_str(int(xyVal)) + " ";
-            }
-            // cout << vals << endl;
-            //  this->beakerNode_->nodelog(vals);
-            //   cellCount++;
+                }               
+            }            
         }
         // this->beakerNode_->beakerCanvas_->drawGrid();
         // this->beakerNode_->beakerCanvas_->drawGrid();
@@ -613,9 +616,6 @@ class Beaker {
 
     vector<gridCoordinatesValueTripletT> newPixelList_;
     vector<gridCoordinatesValueTripletT> backgroundPixelList_;
-
-
-
 
     // template <typename U>
     friend class BeakerNode<Beaker<V>>;
