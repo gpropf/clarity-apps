@@ -11,7 +11,7 @@ using namespace clarity;
 
 template <typename V>
 struct RotationMatrix2D {
-    V r1c1_, r1c2_, r2c1_, r2c2_;
+    const V r1c1_, r1c2_, r2c1_, r2c2_;
 
     RotationMatrix2D(V r1c1, V r1c2, V r2c1, V r2c2)
         : r1c1_(r1c1), r1c2_(r1c2), r2c1_(r2c1), r2c2_(r2c2) {}
@@ -326,6 +326,12 @@ class Beaker {
     typedef pair<gridCoordinatePairT, V> gridCoordinatesValueTripletT;
     // typedef
 
+    RotationMatrix2D<gridCoordinateT> *r0__, *r90__, *r180__,
+        *r270__;  //!< I tried to make these static const class members because they're the same for
+                  //!< all Beakers but ran into huge problems getting link errors and a lot of
+                  //!< errors about forward template definitions. The small space and time savings
+                  //!< wasn't worth it.
+
     Beaker(int gridWidth, int gridHeight, int gridPixelWidth, int gridPixelHeight,
            const string &name = "", bool isReactionRule = false)
         : gridWidth_(gridWidth),
@@ -336,6 +342,7 @@ class Beaker {
           isReactionRule_(isReactionRule) {
         // if (!isReactionRule_)
         //     successionGrid_ = new vector<valuePriorityPairT>[gridWidth * gridHeight];
+        initStandardRotationMatrices();
     }
 
     /**
@@ -367,9 +374,27 @@ class Beaker {
         return *it;
     }
 
+    void initStandardRotationMatrices() {
+        r0__ = new RotationMatrix2D<gridCoordinateT>(1, 0, 0, 1);
+        r90__ = new RotationMatrix2D<gridCoordinateT>(0, -1, 1, 0);
+        r180__ = new RotationMatrix2D<gridCoordinateT>(-1, 0, 0, -1);
+        r270__ = new RotationMatrix2D<gridCoordinateT>(0, 1, -1, 0);
+    }
+
+    void initPixelListMap() {
+        map<V, vector<gridCoordinatesValueTripletT>> pixelListByValue0;
+        map<V, vector<gridCoordinatesValueTripletT>> pixelListByValue90;
+        map<V, vector<gridCoordinatesValueTripletT>> pixelListByValue180;
+        map<V, vector<gridCoordinatesValueTripletT>> pixelListByValue270;
+        rotationToPixelListsMap_[r0__] = pixelListByValue0;
+        rotationToPixelListsMap_[r90__] = pixelListByValue90;
+        rotationToPixelListsMap_[r180__] = pixelListByValue180;
+        rotationToPixelListsMap_[r270__] = pixelListByValue270;
+    }
+
     vector<gridCoordinatesValueTripletT> makePixelList() {
         RotationMatrix2D r90(0, -1, 1, 0);
-        RotationMatrix2D r0(1,0,0,1);
+        RotationMatrix2D r0(1, 0, 0, 1);
         vector<gridCoordinatesValueTripletT> pixels;
         for (gridCoordinateT i = 0; i < this->gridWidth_; i++) {
             for (gridCoordinateT j = 0; j < this->gridHeight_; j++) {
@@ -377,24 +402,25 @@ class Beaker {
 
                 gridCoordinatePairT xy = pair(i, j);
                 gridCoordinatesValueTripletT xyv;
-                pair<gridCoordinateT,gridCoordinateT> xyPrime;
+                pair<gridCoordinateT, gridCoordinateT> xyPrime;
                 if (this->isReactionRule_) {
                     xyPrime = r90.rotateCoordinates(xy);
-                    //cout << "makePixelList(): Rotated pixel: " << xyPrime.first << ", " << xyPrime.second << endl;
-                    
+                    // cout << "makePixelList(): Rotated pixel: " << xyPrime.first << ", " <<
+                    // xyPrime.second << endl;
+
                 }
 
                 else {
                     xyPrime = r0.rotateCoordinates(xy);
-                    //cout << "makePixelList(): Pixel: " << i << ", " << j << endl;
-                    
+                    // cout << "makePixelList(): Pixel: " << i << ", " << j << endl;
                 }
                 xyv = pair(xyPrime, pixelVal);
 
                 if (pixelVal != 0) {
                     // cout << "Pixel: " << i << ", " << j << "; Rotated pixel: " << xyPrime.first
                     //      << ", " << xyPrime.second << endl;
-                    cout << "makePixelList(): NBP: " << xyPrime.first << ", " << xyPrime.second << endl;
+                    cout << "makePixelList(): NBP: " << xyPrime.first << ", " << xyPrime.second
+                         << endl;
                     this->newPixelList_.push_back(xyv);
                 } else {
                     this->backgroundPixelList_.push_back(xyv);
@@ -549,8 +575,8 @@ class Beaker {
                         laydownMatchPixels(reactionRule->successor_->backgroundPixelList_,
                                            pair(i, j), *reactionRule);
                     }
-                }               
-            }            
+                }
+            }
         }
         // this->beakerNode_->beakerCanvas_->drawGrid();
         // this->beakerNode_->beakerCanvas_->drawGrid();
@@ -617,6 +643,9 @@ class Beaker {
     vector<gridCoordinatesValueTripletT> newPixelList_;
     vector<gridCoordinatesValueTripletT> backgroundPixelList_;
 
+    typedef map<V, vector<gridCoordinatesValueTripletT>> pixelListByValueT;
+
+    map<RotationMatrix2D<gridCoordinateT> *, pixelListByValueT> rotationToPixelListsMap_;
     // template <typename U>
     friend class BeakerNode<Beaker<V>>;
 };
